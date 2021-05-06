@@ -3,4 +3,4 @@ project(refactorProject C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(refactorProject main.c)
+add_executable(refactorProject main.c specialSymbols.c specialSymbols.h)
