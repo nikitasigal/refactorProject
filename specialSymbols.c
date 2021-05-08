@@ -164,14 +164,41 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
             isPrevSpace = true;
             continue;
         }
-        if (input[i] == ')') {
-            if (i > 0 && input[i - 1] == ' ')
+
+        if (input[i] == ',') {
+            if (i > 0 && output[(*outputSize) - 1] == ' ')
                 (*outputSize)--;
-            sprintf(output + (*outputSize)++, ")");
+            sprintf(output + *outputSize, ", ");
+            *outputSize += 2;
+            i++;
+            isPrevSpace = true;
+            continue;
+        }
+
+        if (input[i] == ')' || input[i] == ']') {
+            if (i > 0 && output[(*outputSize) - 1] == ' ')
+                (*outputSize)--;
+            if (input[i] == ')')
+                sprintf(output + (*outputSize)++, ")");
+            else
+                sprintf(output + (*outputSize)++, "]");
             i++;
             isPrevSpace = false;
             continue;
         }
+
+        if (input[i] == '[' || input[i] == ';') {
+            if (i > 0 && output[(*outputSize) - 1] == ' ')
+                (*outputSize)--;
+            if (input[i] == '[')
+                sprintf(output + (*outputSize)++, "[");
+            else
+                sprintf(output + (*outputSize)++, ";");
+            i++;
+            isPrevSpace = true;
+            continue;
+        }
+
 
 
         if (input[i] == ' ' || input[i] == '\n' || input[i] == '\t') {

@@ -7,6 +7,12 @@
 
 #define TEXT_SIZE 100000
 
+void swapTexts(char *sourceText, int *sourceSize, char *outputText, int *outputSize) {
+    strcpy(sourceText, outputText);
+    *sourceSize = *outputSize;
+    *outputSize = 0;
+}
+
 int main() {
     FILE *sourceFile = fopen("input.c", "rt");
     char sourceText[TEXT_SIZE] = {0};
@@ -21,7 +27,9 @@ int main() {
 
     // Formatting
     // Step 1 - special symbols
-    //processSpecialSymbols(sourceText, sourceSize, outputText, &outputSize);
+    processSpecialSymbols(sourceText, sourceSize, outputText, &outputSize);
+
+    swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
     wordHandler(sourceText, sourceSize, outputText, &outputSize);
 
