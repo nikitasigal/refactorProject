@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "specialSymbols.h"
+#include "wordHandler.h"
 
 #define TEXT_SIZE 100000
 
@@ -20,7 +21,9 @@ int main() {
 
     // Formatting
     // Step 1 - special symbols
-    processSpecialSymbols(sourceText, sourceSize, outputText, &outputSize);
+    //processSpecialSymbols(sourceText, sourceSize, outputText, &outputSize);
+
+    wordHandler(sourceText, sourceSize, outputText, &outputSize);
 
     // Formatting final - output new code
     FILE *outputFile = fopen("output.c", "wt");
