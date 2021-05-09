@@ -55,7 +55,7 @@ state peek(struct Node **s) {
         return EMPTY;
 }
 
-void skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
+int skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
     bool isSignificantSymbol = false;
     while (*i < inputSize && !isSignificantSymbol) {
         isSignificantSymbol = true;
@@ -108,6 +108,8 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
     struct Node *stateStack = NULL;                                            //Стек состояний
     state lastState = EMPTY;                                                   //lastState. Полезный товарищ, хотя и зачастую бесполезный.
 
+    bool isEqu = false;
+    bool isFunc = false;
 
     int bracketSequence = 0;                                                   //Переменная для верной скобочной последовательности
 
@@ -121,11 +123,15 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                        pop(&stateStack);                                                                    //int/char/bool или struct
                     }                                                                                        //Но он, наверное, бесползен. Возможно убрать?
 
-                    if (now[j].value == FOR) {
+                    /*if (now[j].value == FOR) {
                         lastState = FOR;
-                    }
+                    }*/
 
                     push((&stateStack), now[j].value);                                   //Пушаем нынешнее состояние в стек
+
+                    if (peek(&stateStack) != INIT) {
+                        lastState = peek(&stateStack);
+                    }
 
                     if (input[i] != ' ') {                                               //Если после слова не было пробела, ставим
                         sprintf(output + (*outputSize)++, " ");            //Ex.: for_(;;)  while_()  if_()
@@ -148,7 +154,8 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
 
                         if (!bracketSequence) {                                               //Если с последовательностью всё хорошо
                             //TODO Вопрос: мы сейчас стоим на input[i] = ')'. Вы уверены, что хотите проверить это ещё раз?
-                            if (input[i] != ' ')                                              //Проверяем на пробеле ли мы стоим. Нет - ставим
+                            //TODO Ответ: была ошибка, смотреть надо следующий символ. Но возможно здесь нужен скип комента
+                            if (input[i+1] != ' ')                                            //Проверяем на пробеле ли мы стоим. Нет - ставим
                                 sprintf(output + (*outputSize)++, " ");
                             lastState = pop(&stateStack);                                     //И выходим из области работы с последней скобкой.
                         }
@@ -189,14 +196,49 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                         } else sprintf(output + (*outputSize)++, "\n");     //Для любой другой инициализации ;\n
 
                         /*while (peek(&stateStack) == INIT) {                             // TODO: выгрузка всех INIT. Надо бы сделать где-то
-                            pop(&stateStack);
+                            pop(&stateStack);                                             // TODO: сейчас сделаю отделение на функцию
                         }*/
                         /*lastState =*/ pop(&stateStack);                                 //Выносим состояние
+                        isEqu = false;
 
                         if (input[i + 1] == ' ')
                             i++;                                                          //Строка для избавления ненужного пробела после
                         break;
                     }
+
+                    case '=':
+                        isEqu = true;
+                        sprintf(output + (*outputSize)++, "=");
+                        break;
+
+                    case '(':
+                        if (!isEqu)
+                            isFunc = true;
+                        sprintf(output + (*outputSize)++, "(");
+                        break;
+
+                    case ',':
+                        if (isFunc) {
+                            sprintf(output + (*outputSize)++, ",");
+                            sprintf(output + (*outputSize)++, " ");
+                            if (input[i + 1] == ' ')
+                                i++;
+                            pop(&stateStack);
+                            break;
+                        }else
+
+                    case ')':
+                        if (isFunc){
+                            sprintf(output + (*outputSize)++, ")");
+                            sprintf(output + (*outputSize)++, " ");
+                            if (input[i + 1] == ' ')
+                                i++;
+                            pop(&stateStack);                                 //Выносим состояние
+                            isEqu = false;
+                            isFunc = false;
+                            break;
+
+                        }
 
                     default: {                                                            //Все остальные символы - просто печатаем
                         sprintf(output + (*outputSize)++, "%c", input[i]);
@@ -237,8 +279,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                         //TODO Comment, Space and other skip   FUNCT   Нужна функция для пропуска пробелов и комментариев. Сделайте пж, она простая, просто времени нет :(
                         sprintf(output + (*outputSize)++, ":");                     //Печатаем
 
-                        if (input[i + 1] ==
-                            '{') {                                                                 //Если у нас case:{
+                        if (input[i + 1] == '{') {                                                   //Если у нас case:{
                             sprintf(output + (*outputSize), "{\n");                  //Приклеиваем следующий '{' к ':'
                             (*outputSize) += 2;
                             i++;
@@ -297,7 +338,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                         sprintf(output + (*outputSize)++, "%c", input[i]);     //Просто печать
                         //TODO Comment, Space and other skip
                         //TODO Скипать втупую не получилось. Когда мы скипаем пробелы и попадаем на значимую букву, то она не попадает в word. Не думал, как исправить, но оставил пока что функцию skip
-                        //skip(input, output, &i, outputSize, inputSize);
+                        /*skip(input, output, &i, outputSize, inputSize); */
                         if (lastState == FOR && input[i] == '{') {                            //Установка FOR_BODY, FOR_SINGLE,
                             push(&stateStack, FOR_BODY);                                //а также, чтобы не мешал при вложенности IF ставит \n, если у него есть тело
                         } else if (lastState == FOR && input[i] != '{') {
