@@ -19,7 +19,7 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
         // Before everything else - skip commented segments, strings, chars, #include and #define instructions
         if (inputSize - i >= 2 && input[i] == '/') {
             if (input[i + 1] == '/') {
-                while (input[i] != '\n')
+                while (input[i] != '\n' && i < inputSize)
                     sprintf(output + (*outputSize)++, "%c", input[i++]);
                 sprintf(output + (*outputSize)++, "\n");
                 i++;
@@ -117,8 +117,8 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
                 if (input[i] == singleSymbols[j])
                     isSingle = true;
             if (isSingle) {
-                if (!isPrevSpace)
-                    sprintf(output + (*outputSize)++, " ");
+                //if (!isPrevSpace)
+                sprintf(output + (*outputSize)++, " ");
                 sprintf(output + *outputSize, "%c ", input[i]);
                 *outputSize += 2;
                 i++;
@@ -144,8 +144,8 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
                 previousSymbol = 0;
             if (isalnum(previousSymbol) || previousSymbol == ')') {
                 // Multiplication
-                if (!isPrevSpace)
-                    sprintf(output + (*outputSize)++, " ");
+                //if (!isPrevSpace)
+                sprintf(output + (*outputSize)++, " ");
                 sprintf(output + *outputSize, "* ");
                 *outputSize += 2;
                 i++;
@@ -183,7 +183,7 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
             else
                 sprintf(output + (*outputSize)++, "]");
             i++;
-            isPrevSpace = false;
+            isPrevSpace = true;
             continue;
         }
 

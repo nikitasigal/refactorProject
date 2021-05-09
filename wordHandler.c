@@ -55,7 +55,7 @@ state peek(struct Node **s) {
         return EMPTY;
 }
 
-int skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
+void skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
     bool isSignificantSymbol = false;
     while (*i < inputSize && !isSignificantSymbol) {
         isSignificantSymbol = true;
@@ -63,23 +63,18 @@ int skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
             if (input[*i + 1] == '/') {
                 while (input[*i] != '\n')
                     sprintf(output + (*outputSize)++, "%c", input[(*i)++]);
-                i++;
+                //sprintf(output + (*outputSize)++, "\n");
+                //(*i)++;
                 continue;
             } else
             if (input[*i + 1] == '*') {
                 while (input[*i] != '*' || input[*i + 1] != '/')
                     sprintf(output + (*outputSize)++, "%c", input[(*i)++]);
                 sprintf(output + *outputSize, "*/");
-                *outputSize += 3;
-                i += 2;
+                *outputSize += 2;
+                *i += 2;
                 continue;
             }
-        }
-
-        if (input[*i] == ' ' || input[*i] == '\n') {
-            while (input[*i] == ' ' || input[*i] == '\n')
-                sprintf(output + (*outputSize)++, "%c", input[(*i)++]);
-            continue;
         }
     }
 }
@@ -114,6 +109,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
     int bracketSequence = 0;                                                   //Переменная для верной скобочной последовательности
 
     for (int i = 0; i < inputSize; ++i) {                                      //Наш цикл
+        //skip(input, output, &i, outputSize, inputSize);
         if (isalnum(input[i]) || input[i] == '_') {                            //Формирование слова
             word[wordSize++] = input[i];
         } else {                                                               //При первом же разделителе, смотрим вышло ли слово
@@ -334,21 +330,23 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                         break;                                                                //int a; int b; -> int a;
                                                                                               //                 int b;
                     }
-                    default: {                                                                //Все остальные символы
-                        sprintf(output + (*outputSize)++, "%c", input[i]);     //Просто печать
+
+                    default: {
+                        //Все остальные символы
+                        //sprintf(output + (*outputSize)++, "%c", input[i]);     //Просто печать
                         //TODO Comment, Space and other skip
                         //TODO Скипать втупую не получилось. Когда мы скипаем пробелы и попадаем на значимую букву, то она не попадает в word. Не думал, как исправить, но оставил пока что функцию skip
-                        /*skip(input, output, &i, outputSize, inputSize); */
-                        if (lastState == FOR && input[i] == '{') {                            //Установка FOR_BODY, FOR_SINGLE,
+                        skip(input, output, &i, outputSize, inputSize);
+                        if (lastState == FOR && (input[i] == '{' || input[i + 1] == '{')) {                            //Установка FOR_BODY, FOR_SINGLE,
                             push(&stateStack, FOR_BODY);                                //а также, чтобы не мешал при вложенности IF ставит \n, если у него есть тело
-                        } else if (lastState == FOR && input[i] != '{') {
+                        } else if (lastState == FOR && (input[i] != '{' && input[i + 1] != '{')) {
                             sprintf(output + (*outputSize)++, "\n");
                             push(&stateStack, FOR_SINGLE);
-                        } else if (lastState == IF && input[i] != '{') {
+                        } else if (lastState == IF && (input[i] != '{' && input[i + 1] != '{')) {
                             sprintf(output + (*outputSize)++, "\n");
                         }
                         // TODO Вы сначала печатаете символ (командой в начале default), а потом делаете \n. Вы уверены в последовательности действий?
-                        //sprintf(output + (*outputSize)++, "%c", input[i]);
+                        sprintf(output + (*outputSize)++, "%c", input[i]);
                         lastState = EMPTY; //Чтобы не устанавливать FOR_BODY/FOR_SINGLE повторно
                         break;
                     }
