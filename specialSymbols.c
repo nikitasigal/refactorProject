@@ -118,7 +118,8 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
                     isSingle = true;
             if (isSingle) {
                 //if (!isPrevSpace)
-                sprintf(output + (*outputSize)++, " ");
+                if (output[*outputSize - 1] != ' ')
+                    sprintf(output + (*outputSize)++, " ");
                 sprintf(output + *outputSize, "%c ", input[i]);
                 *outputSize += 2;
                 i++;
@@ -145,7 +146,8 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
             if (isalnum(previousSymbol) || previousSymbol == ')') {
                 // Multiplication
                 //if (!isPrevSpace)
-                sprintf(output + (*outputSize)++, " ");
+                if (output[*outputSize - 1] != ' ')
+                    sprintf(output + (*outputSize)++, " ");
                 sprintf(output + *outputSize, "* ");
                 *outputSize += 2;
                 i++;

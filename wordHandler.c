@@ -79,6 +79,18 @@ void skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
     }
 }
 
+int nesting (struct Node **s){
+    int res = 0;
+    struct Node *next = (*s);
+    while (next) {
+        if (next->value == FOR || next->value == FOR_BODY || next -> value == FOR_SINGLE){
+            res++;
+        }
+        next = (next) -> next;
+    }
+    return res;
+}
+
 void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
     char word[WORDS] = {0};                                                 //Буфер для слова
     int wordSize = 0;                                                       //Длина слова в буфере
@@ -108,7 +120,12 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
 
     int bracketSequence = 0;                                                   //Переменная для верной скобочной последовательности
 
+    int nestResult = 0;
+
     for (int i = 0; i < inputSize; ++i) {                                      //Наш цикл
+        if (nesting(&stateStack) > nestResult) {
+            nestResult = nesting(&stateStack);
+        }
         //skip(input, output, &i, outputSize, inputSize);
         if (isalnum(input[i]) || input[i] == '_') {                            //Формирование слова
             word[wordSize++] = input[i];
@@ -195,6 +212,11 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                             pop(&stateStack);                                             // TODO: сейчас сделаю отделение на функцию
                         }*/
                         /*lastState =*/ pop(&stateStack);                                 //Выносим состояние
+
+                        while (peek(&stateStack) == FOR_SINGLE){
+                            pop(&stateStack);
+                        }
+
                         isEqu = false;
 
                         if (input[i + 1] == ' ')
@@ -283,6 +305,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                             sprintf(output + (*outputSize)++, "\n");                //Если же просто case: - печатаем \n
 
                         pop(&stateStack);                                                         //Выносим состояние
+
                         break;
                     }
 
@@ -310,6 +333,18 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                                                                                                  //} name = { 2 };                   } name;
                       /*if (lastState == EMPTY && input[i] == '{' && stateExisted)
                          push(&stateStack, NOTHING);*/
+
+
+                        if ((peek(&stateStack) == NOTHING || peek(&stateStack) == FOR_BODY) && input[i] == '}'){
+                            pop(&stateStack);
+                            while (peek(&stateStack) == FOR_SINGLE){
+                                pop(&stateStack);
+                            }
+                        }
+
+                        if (peek(&stateStack) == FOR_BODY && input[i] == '{') {
+                            push(&stateStack, NOTHING);
+                        }
 
                         if (output[(*outputSize) - 1] == ' ')                            //Для красивой "склейки" игнорируем прошлый пробел
                             (*outputSize)--;                                             //Ведь ставится он обычно при состояниях
