@@ -342,7 +342,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                             }
                         }
 
-                        if (peek(&stateStack) == FOR_BODY && input[i] == '{') {
+                        if ((peek(&stateStack) == FOR_BODY || lastState == IF) && input[i] == '{') {
                             push(&stateStack, NOTHING);
                         }
 
