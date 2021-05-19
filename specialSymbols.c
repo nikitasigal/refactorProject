@@ -1,13 +1,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include "specialSymbols.h"
 
 void processSpecialSymbols(char *input, int inputSize, char *output, int *outputSize) {
     char singleSymbols[] = {'-', '+', '/', '^', '=', '<', '>',
-                            '%'};   //& and * are too complex and are to be treated separately
+                            '%', '&', '|', '?'};   //& and * are too complex and are to be treated separately
     char doubleSymbols[][2] = {"==", "!=", ">>", "<<", "||", "&&", ">=", "<=", "+=", "-=", "*=", "/=", "^=", "|=",
                                "&="};    //-- and ++ are exceptions
     char exceptionSymbols[][2] = {"--", "++", "->"};
@@ -39,7 +38,7 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
         if (input[i] == '\'') {
             sprintf(output + (*outputSize)++, "'");
             i++;
-            while (input[i - 1] == '\\' || input[i] != '\'')
+            while ((input[i - 1] == '\\' && input[i - 2] != '\\') || input[i] != '\'')
                 sprintf(output + (*outputSize)++, "%c", input[i++]);
             sprintf(output + (*outputSize)++, "'");
             i++;
@@ -113,7 +112,7 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
         // Third - singles
         {
             bool isSingle = false;
-            for (int j = 0; j < 8; ++j)
+            for (int j = 0; j < 11; ++j)
                 if (input[i] == singleSymbols[j])
                     isSingle = true;
             if (isSingle) {
@@ -136,7 +135,7 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
             continue;
         }
         if (input[i] == '*') {  // Disambiguation between ptr and multiplication
-            char previousSymbol = 0;
+            char previousSymbol;
             if (i > 0 && input[i - 1] != ' ' && input[i - 1] != '\n')
                 previousSymbol = input[i - 1];
             else if (i > 1)
