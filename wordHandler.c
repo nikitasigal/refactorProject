@@ -7,7 +7,7 @@
 
 #define WORDS 2000
 #define TEXT_SIZE 100000
-#define WORDS_FOR_STATE_NUM 18                                              //Комментарии на русском, т.к. читать будут все + Костя
+#define WORDS_FOR_STATE_NUM 19                                              //Комментарии на русском, т.к. читать будут все + Костя
 //Всё, что можно вынести в функции обозначено FUNCT.
 
 typedef enum {                                                              //Наши состояния
@@ -182,11 +182,11 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                                            {"enum",    STRUCT},
                                            {"case",    CASE},
                                            {"default", CASE},
-                                           {"else",    ELSE}};
-
+                                           {"else",    ELSE},
+                                           {"state", INIT}};
 
     struct Node *stateStack = NULL;                                            //Стек состояний
-    state lastState = EMPTY;                                                   //lastState. Полезный товарищ, хотя и зачастую бесполезный.
+    state lastState = EMPTY;                                                   //lastState. Полезный товарищ, хотя и зачастую бесполезный
 
     //
     /*struct funcInitNode *functions = NULL;
@@ -223,6 +223,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                        push(&stateStack, now[j].value);                                                    //Но он, наверное, бесползен. Возможно убрать?
                     } else if (now[j].value == STRUCT) {
                         push(&stateStack, INIT);
+                        lastState = STRUCT;
                     } else {
                         push((&stateStack), now[j].value);                                   //Пушаем нынешнее состояние в стек
                     }
@@ -337,6 +338,19 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                         sprintf(output + (*outputSize)++, "=");
                         break;
 
+                    case '{':
+                        sprintf(output + (*outputSize)++, "{");
+                        if (!isEqu && lastState == STRUCT){
+                            pop(&stateStack);
+                            push(&stateStack, STRUCT);
+                            sprintf(output + (*outputSize)++, "\n");
+                            if (input[i + 1] == ' ')
+                                i++;
+                            tabsCount++;
+                            printTabs(tabsCount, output, outputSize);
+                        }
+                        break;
+
                     case '(':
                         if (!isEqu)
                             isFunc = true;
@@ -365,8 +379,8 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                                 pop(&stateStack);                                 //Выносим состояние
                             isEqu = false;
                             isFunc = false;
+                            break;
                         }
-                        break;
                     default: {                                                            //Все остальные символы - просто печатаем
                         sprintf(output + (*outputSize)++, "%c", input[i]);
                         break;
@@ -520,10 +534,12 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                             push(&stateStack, FOR_BODY);                                //а также, чтобы не мешал при вложенности IF ставит \n, если у него есть тело
                             ++tabsCount;
                             printTabs(tabsCount, output, outputSize);
+                            lastState = EMPTY;
                         } else if (lastState == IF && (input[i] == '{' || input[i + 1] == '{')) {
                             push(&stateStack, IF_BODY);                                //а также, чтобы не мешал при вложенности IF ставит \n, если у него есть тело
                             ++tabsCount;
                             printTabs(tabsCount, output, outputSize);
+                            lastState = EMPTY;
                         } else if (lastState == FOR && (input[i] != '{' && input[i + 1] != '{')) {
                             push(&stateStack, FOR_SINGLE);
                             ++tabsCount;
@@ -531,6 +547,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                                 sprintf(output + (*outputSize)++, "\n");
                                 printTabs(tabsCount, output, outputSize);
                             }
+                            lastState = EMPTY;
                         } else if (lastState == IF && (input[i] != '{' && input[i + 1] != '{')) {
                             push(&stateStack, IF_SINGLE);
                             ++tabsCount;
@@ -538,10 +555,12 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                                 sprintf(output + (*outputSize)++, "\n");
                                 printTabs(tabsCount, output, outputSize);
                             }
+                            lastState = EMPTY;
                         } else if (lastState == ELSE && ((input[i] == '{' && input[i + 1] == '{'))) {
                             push(&stateStack, ELSE_BODY);                                //а также, чтобы не мешал при вложенности IF ставит \n, если у него есть тело
                             ++tabsCount;
                             //printTabs(tabsCount, output, outputSize);
+                            lastState = EMPTY;
                         } else if (lastState == ELSE && ((input[i] != '{' && input[i + 1] != '{'))) {
                             push(&stateStack, ELSE_SINGLE);                                //а также, чтобы не мешал при вложенности IF ставит \n, если у него есть тело
                             ++tabsCount;
@@ -549,6 +568,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
                                 sprintf(output + (*outputSize)++, "\n");
                                 printTabs(tabsCount, output, outputSize);
                             }
+                            lastState = EMPTY;
                         }
 
 
@@ -558,7 +578,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize) {
 
                         if (input[i] == '\n')
                             printTabs(tabsCount, output, outputSize);
-                        lastState = EMPTY; //Чтобы не устанавливать FOR_BODY/FOR_SINGLE повторно
+
                         break;
                     }
                 }

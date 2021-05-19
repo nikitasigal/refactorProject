@@ -1,0 +1,8 @@
+//
+// Created by Razmik on 19.05.2021.
+//
+
+#ifndef REFACTORPROJECT_NEWTYPES_H
+#define REFACTORPROJECT_NEWTYPES_H
+
+#endif //REFACTORPROJECT_NEWTYPES_H
