@@ -2,8 +2,7 @@
 #include <string.h>
 #include "specialSymbols.h"
 #include "wordHandler.h"
-
-#define TEXT_SIZE 100000
+#include "newTypes.h"
 
 void swapTexts(char *sourceText, int *sourceSize, char *outputText, int *outputSize) {
     strcpy(sourceText, outputText);
@@ -23,13 +22,36 @@ int main() {
     char outputText[TEXT_SIZE] = {0};
     int outputSize = 0;
 
+    //now - Массив состояний + их отдельного слова. nowSize - изначальный размер массива (он увеличится, если будут новые типы данных)
+    int nowSize = 19;
+    stateTypes now[WORDS_FOR_STATE_NUM] = {{"while",   FOR},
+                                           {"for",     FOR},
+                                           {"switch",  IF},
+                                           {"if",      IF},
+                                           {"int",     INIT},
+                                           {"char",    INIT},
+                                           {"double",  INIT},
+                                           {"float",   INIT},
+                                           {"short",   INIT},
+                                           {"long",    INIT},
+                                           {"bool",    INIT},
+                                           {"void",    INIT},
+                                           {"typedef", TYPEDEF},
+                                           {"struct",  STRUCT},
+                                           {"enum",    STRUCT},
+                                           {"case",    CASE},
+                                           {"default", CASE},
+                                           {"else",    ELSE}};
+
     // Formatting
     // Step 1 - special symbols
     processSpecialSymbols(sourceText, sourceSize, outputText, &outputSize);
 
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
-    wordHandler(sourceText, sourceSize, outputText, &outputSize);
+    newTypes(now, &nowSize, sourceText, sourceSize);
+
+    wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
 
     // Formatting final - output new code
     FILE *outputFile = fopen("output.c", "wt");
