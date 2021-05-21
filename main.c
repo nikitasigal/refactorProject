@@ -4,6 +4,7 @@
 #include "specialSymbols.h"
 #include "wordHandler.h"
 #include "newTypes.h"
+#include "checkInitialization.h"
 
 void swapTexts(char *sourceText, int *sourceSize, char *outputText, int *outputSize) {
     strcpy(sourceText, outputText);
@@ -53,6 +54,8 @@ int main() {
     newTypes(now, &nowSize, sourceText, sourceSize);
 
     wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
+
+    checkInit(sourceText, sourceSize, now, nowSize);
 
     // Formatting final - output new code
     FILE *outputFile = fopen("output.c", "wt");

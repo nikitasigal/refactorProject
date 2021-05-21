@@ -62,6 +62,16 @@ void pushNewType(stateTypes *now, int *nowSize, const char *input, char *word, i
     }
 }
 
+void skipSpecialWords(const char *input, int inputSize, const char specialWords[][WORDS], int *j) {
+    for (int k = 0; k < SPECIAL_WORDS_NUMBER; ++k) {
+        if (!strncmp(&input[(*j)], specialWords[k], strlen(specialWords[k]))) {
+            (*j) += (int) strlen(specialWords[k]);
+            k = -1;
+            skip2(input, j, inputSize);
+        }
+    }
+}
+
 /*
  * Находим новые типы данных! struct, enum, typedef. Работает при любых случаях typedef.
  * Работает фактически втупую: встретил struct / enum -> взял его имя (если оно есть)
@@ -138,13 +148,7 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
                 skip2(input, &j, inputSize);
 
                 // Скипаем все типы данных, которые хотим пропустить
-                for (int k = 0; k < SPECIAL_WORDS_NUMBER; ++k) {
-                    if (!strncmp(&input[j], specialWords[k], strlen(specialWords[k]))) {
-                        j += (int) strlen(specialWords[k]);
-                        k = -1;
-                        skip2(input, &j, inputSize);
-                    }
-                }
+                skipSpecialWords(input, inputSize, specialWords, &j);
 
                 // Если встретили {, то это инициализация структуры / перечисления. Ищем конец инициализации и берём имя
                 if (input[j] == '{') {
