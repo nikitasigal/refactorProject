@@ -85,8 +85,8 @@ void skipSpecialWords(const char *input, int inputSize, const char specialWords[
  * и взять имя.
  * В ином случае, нам надо пропустить все типы данных (long long int и подобное) и взять имя
  */
-void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
-    char word [WORDS] = {0};
+void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
+    char word[WORDS] = {0};
     int wordSize = 0;
 
     stateTypes sucks[WORDS_FOR_STATE_NUM]; //Массив переменных и функций, который сосут = написаны не по стилю
@@ -169,7 +169,7 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
             //Дальше идёт проверка на правописание переменных\функций - Обращаться к Размику
             for (int l = 0; l < *nowSize; l++) {
                 if (!strcmp(word, now[l].stateName) && (now[l].value == INIT || now[l].value == STRUCT)) {
-                //Смотрим встретили мы объявление, неважно какую, главное не typedef, коз он не объявляет переменные
+                    //Смотрим встретили мы объявление, неважно какую, главное не typedef, коз он не объявляет переменные
                     int j;                  //Переменная, помогающая бегать
                     bool multi = false;     //Для объявления переменных через запятую
 
@@ -186,7 +186,7 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
                     j = i;
 
                     //Если у нас был enum или struct, объявление будет после }, поэтому и идём до него
-                    if (input[j] == '{' && now[l].value == STRUCT){
+                    if (input[j] == '{' && now[l].value == STRUCT) {
                         while (input[j] != '}')
                             j++;
                         j++;
@@ -223,7 +223,7 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
                             }
                             multi = true;
                             continue;
-                        //Что-либо иное, просто переменная
+                            //Что-либо иное, просто переменная
                         } else {
                             //Проверяем подходит ли под camelStyle
                             //Нет - закидываем в список сосущих с состоянием INIT
@@ -238,9 +238,9 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
 
                         //Проверяем есть ли запятая
                         //Нет - заканчиваем
-                        if (input[j] != ','){
+                        if (input[j] != ',') {
                             multi = true;
-                        //Да - продолжаем проверять объявленные переменные
+                            //Да - продолжаем проверять объявленные переменные
                         } else {
                             j++;
                             clearWord(word, &wordSize);

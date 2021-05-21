@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 #include "specialSymbols.h"
 #include "wordHandler.h"
 #include "newTypes.h"
 #include "checkInitialization.h"
+#include "unusedTokens.h"
 
 void swapTexts(char *sourceText, int *sourceSize, char *outputText, int *outputSize) {
     strcpy(sourceText, outputText);
@@ -45,20 +45,37 @@ int main() {
                                            {"default", CASE},
                                            {"else",    ELSE}};
 
+    // Мапы для переменных и функций. Будем помечать, какие были, и использовались ли они
+    Map variablesMap[MAP_SIZE], functionsMap[MAP_SIZE];
+    initElements(variablesMap);
+    initElements(functionsMap);
+
+    // Переменная для определения номера строки в файле
+    int lineNumber = 1;
+
     // Formatting
     // Step 1 - special symbols
     processSpecialSymbols(sourceText, sourceSize, outputText, &outputSize);
 
+    // Step 1.1 - output <-> input
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
-    // Step 2 - custom data types and checking for the correctness of variables and functions
+    // Step 2 - custom data types and checking for the correctness of variables and functions TODO many files
     newTypes(now, &nowSize, sourceText, sourceSize);
 
     // Step 3 - formatting
     wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
 
-    // Step 4 - checking for initialization of variables
-    checkInit(sourceText, sourceSize, now, nowSize);
+    swapTexts(sourceText, &sourceSize, outputText, &outputSize);
+    outputSize = sourceSize;
+
+    // Step 4 - checking for initialization of variables TODO many files
+    checkInit(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
+
+    checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
+
+    printFooMap(functionsMap);
+    printVarMap(variablesMap);
 
     // Formatting final - output new code
     FILE *outputFile = fopen("output.c", "wt");

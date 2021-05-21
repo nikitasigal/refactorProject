@@ -6,6 +6,12 @@
 #define TEXT_SIZE 100000                // Размер текста
 #define SPECIAL_WORDS_NUMBER 9          // Количество типов данных в Си. unsigned, long, int, char и т.п.
 
+#define KEY_SIZE 10
+#define MAP_SIZE 101
+#define HASH_MULTIPLIER 31
+
+#include <stdbool.h>
+
 typedef enum {                           //Наши состояния
     FOR,                                 //Состояние FOR. Распостраняется на for, while, switch
     FOR_BODY,                            //Два состояния для отслежки стека циклов
