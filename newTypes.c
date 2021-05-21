@@ -74,6 +74,9 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
     char word [WORDS] = {0};
     int wordSize = 0;
 
+    stateTypes sucks[WORDS_FOR_STATE_NUM]; //Массив переменных и функций, который сосут = написаны не по стилю
+    int sucksSize = 0;                     //Размер этого массива
+
     // Стандартные типы данных, которые нам стоит пропустить при typedef, например при:
     // typedef unsigned long long int a; - нам надо пропустить unsigned long long int, чтобы добраться до имени
     char specialWords[SPECIAL_WORDS_NUMBER][WORDS] = {"struct", "enum", "long",
@@ -84,17 +87,19 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
         if (isalnum(input[i]) || input[i] == '_') {
             word[wordSize++] = input[i];
         } else {
-            skip2(input, &i, inputSize);
+            //skip2(input, &i, inputSize);
 
             // Не надо нам пустые слова обрабатывать. Могут возникнуть ошибки, при strcmp
             if (strlen(word) == 0)
                 continue;
 
-            if (!strcmp(word, "struct") || !strcmp(word, "enum")) {
+
+            //Немного изменю вот это
+            /*if (!strcmp(word, "struct") || !strcmp(word, "enum")) {
                 // Берём слово и пушаем его как новый тип данных
                 skip2(input, &i, inputSize);
                 pushNewType(now, nowSize, input, word, &wordSize, &i);
-            }
+            }*/
 
             // TODO Вообще, можно объединить эти два ифа
 
@@ -113,6 +118,7 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
                  * В таком случае, чтобы добраться до 'B', нам надо пропустить struct, enum, а также имя 'A'. Когда
                  * мы пропустим имя 'A', то встретим { и пойдём искать }, а после возьмём имя 'B'
                  */
+
                 bool isStructOrEnum = false;
                 if (!strncmp(&input[j], "struct", 6 * sizeof(char))) {
                     j += 6;
@@ -149,6 +155,90 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
 
                 // Берём слово и пушаем его как новый тип данных
                 pushNewType(now, nowSize, input, word, &wordSize, &j);
+            }
+
+            //Дальше идёт проверка на правописание переменных\функций - Обращаться к Размику
+            for (int l = 0; l < *nowSize; l++) {
+                if (!strcmp(word, now[l].stateName) && (now[l].value == INIT || now[l].value == STRUCT)) {
+                //Смотрим встретили мы объявление, неважно какую, главное не typedef, коз он не объявляет переменные
+                    int j;                  //Переменная, помогающая бегать
+                    bool multi = false;     //Для объявления переменных через запятую
+
+                    //В случае struct и enum делаем то же, что и в прошлом коммите
+                    if (!strcmp(word, "struct") || !strcmp(word, "enum")) {
+                        // Берём слово и пушаем его как новый тип данных
+                        skip2(input, &i, inputSize);
+                        pushNewType(now, nowSize, input, word, &wordSize, &i);
+                        skip2(input, &i, inputSize);
+
+                    }
+
+                    //Для продолжения анализа
+                    j = i;
+
+                    //Если у нас был enum или struct, объявление будет после }, поэтому и идём до него
+                    if (input[j] == '{' && now[l].value == STRUCT){
+                        while (input[j] != '}')
+                            j++;
+                        j++;
+                    }
+
+                    //Пропускаем всё лишнее и начинаем собирать имя нашей переменной
+                    clearWord(word, &wordSize);
+                    skip2(input, &j, inputSize);
+
+                    //Пока была запятая, продолжаем
+                    while (!multi) {
+
+                        //Пропускаем ненужное после запятой
+                        skip2(input, &j, inputSize);
+
+                        //Формирование слова
+                        while (isalnum(input[j]) || input[j] == '_') {
+                            word[wordSize++] = input[j++];
+                        }
+
+                        //Пропускаем ненужное до следующего символа
+                        skip2(input, &j, inputSize);
+
+                        //Если это (, то мы объявили функцию
+                        if (input[j] == '(') {
+                            //Проверяем подходит ли под PascalStyle
+                            //Нет - закидываем в список сосущих с состоянием FUNC
+                            if (word[0] < 65 || word[0] > 90) {
+                                if (strlen(word) != 0) {
+                                    strcpy(sucks[sucksSize].stateName, word);
+                                    sucks[sucksSize].value = FUNC;
+                                    (sucksSize)++;
+                                }
+                            }
+                            multi = true;
+                            continue;
+                        //Что-либо иное, просто переменная
+                        } else {
+                            //Проверяем подходит ли под camelStyle
+                            //Нет - закидываем в список сосущих с состоянием INIT
+                            if (word[0] < 97 || word[0] > 122) {
+                                if (strlen(word) != 0) {
+                                    strcpy(sucks[sucksSize].stateName, word);
+                                    sucks[sucksSize].value = INIT;
+                                    (sucksSize)++;
+                                }
+                            }
+                        }
+
+                        //Проверяем есть ли запятая
+                        //Нет - заканчиваем
+                        if (input[j] != ','){
+                            multi = true;
+                        //Да - продолжаем проверять объявленные переменные
+                        } else {
+                            j++;
+                            clearWord(word, &wordSize);
+                        }
+                    }
+                    break;
+                }
             }
 
             clearWord(word, &wordSize);

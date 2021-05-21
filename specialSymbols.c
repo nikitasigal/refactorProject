@@ -26,10 +26,19 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
                 continue;
             }
             if (input[i + 1] == '*') {
-                while (input[i] != '*' || input[i + 1] != '/')
-                    sprintf(output + (*outputSize)++, "%c", input[i++]);
-                sprintf(output + *outputSize, "*/\n");
-                *outputSize += 3;
+                sprintf(output + (*outputSize), "//");
+                (*outputSize)+=2;
+                i+=2;
+                while (input[i] != '*' || input[i + 1] != '/') {
+                    sprintf(output + (*outputSize)++, "%c", input[i]);
+                    if (input[i] == '\n'){
+                        sprintf(output + (*outputSize), "//");
+                        (*outputSize)+=2;
+                    }
+                    i++;
+                }
+                sprintf(output + *outputSize, "\n");
+                (*outputSize)++;
                 i += 2;
                 isPrevSpace = true;
                 continue;
