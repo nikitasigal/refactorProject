@@ -172,7 +172,6 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize, stat
                         skip(input, output, &i, outputSize, inputSize);
                         if (now[j].value != INIT || !(input[i] == ')' || input[i + 1] == ')'))          // Проверка, преобразование типов это или нет
                             push((&stateStack), now[j].value);                                          //Пушаем нынешнее состояние в стек
-                        else printf("asd");
                     }
 
                     if (peek(&stateStack) != INIT) {
@@ -326,6 +325,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize, stat
                         }
                     }
                     default: {                                                            //Все остальные символы - просто печатаем
+                        skip(input, output, &i, outputSize, inputSize);
                         sprintf(output + (*outputSize)++, "%c", input[i]);
                         break;
                     }

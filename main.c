@@ -51,10 +51,13 @@ int main() {
 
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
+    // Step 2 - custom data types and checking for the correctness of variables and functions
     newTypes(now, &nowSize, sourceText, sourceSize);
 
+    // Step 3 - formatting
     wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
 
+    // Step 4 - checking for initialization of variables
     checkInit(sourceText, sourceSize, now, nowSize);
 
     // Formatting final - output new code

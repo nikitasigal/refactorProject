@@ -32,6 +32,11 @@ void skip2(const char *input, int *i, int inputSize) {
                 continue;
             }
         }
+
+        // Пропускаем #
+        if (input[*i] == '#')
+            while (input[*i] != '\n')
+                (*i)++;
         break;
     }
 }
@@ -97,7 +102,7 @@ void newTypes (stateTypes *now, int *nowSize, char *input, int inputSize) {
         if (isalnum(input[i]) || input[i] == '_') {
             word[wordSize++] = input[i];
         } else {
-            //skip2(input, &i, inputSize);
+            skip2(input, &i, inputSize);
 
             // Не надо нам пустые слова обрабатывать. Могут возникнуть ошибки, при strcmp
             if (strlen(word) == 0)

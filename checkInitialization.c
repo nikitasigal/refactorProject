@@ -24,7 +24,7 @@ void skip3(const char *input, int *i, int inputSize) {
     while (*i < inputSize) {
         // Пропускаем пробелы, \n, \t
         if (input[*i] == ' ' || input[*i] == '\n' || input[*i] == '\t' || input[*i] == ',' || input[*i] == '*' ||
-            input[*i] == '&' || input[*i] == '(' || input[*i] == ')') { // TODO если будут баги, то возможно из-за ( )
+            input[*i] == '&') { // TODO если будут баги, то возможно из-за ( )
 
             (*i)++;
             continue;
@@ -272,7 +272,7 @@ void clearVariables(VARIABLE *variables, int variableCount) {
  * Скипает ТОЛЬКО комментарии. У меня были какие-то проблемы с функцией skip3
  */
 void skipComments(const char *input, int inputSize, int *i) {
-    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*') {
+    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*' || input[*i] == '"') {
         skip3(input, i, inputSize);
         --(*i);
     }
@@ -289,6 +289,7 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize) {
         } else {
             // Пропуск комментариев
             skipComments(input, inputSize, &i);
+            //skip3(input, &i, inputSize);
 
             // Пропуск typedef, struct
             if (!strcmp(word, "typedef")) {
