@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <string.h>
+#include "definitions.h"
 #include "specialSymbols.h"
 #include "wordHandler.h"
 #include "newTypes.h"
@@ -66,16 +65,15 @@ int main() {
     // Step 3 - formatting
     wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
 
+    // Step 3.1 - exchange texts and finalize size of output text (outputSize = sourceSize)
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
     outputSize = sourceSize;
 
     // Step 4 - checking for initialization of variables TODO many files
     checkInit(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
 
+    // Step 5 - searching for unused variables and functions
     checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
-
-    printFooMap(functionsMap);
-    printVarMap(variablesMap);
 
     // Formatting final - output new code
     FILE *outputFile = fopen("output.c", "wt");

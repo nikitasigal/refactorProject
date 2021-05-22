@@ -1,7 +1,4 @@
-#include "stack.h"
-#include <malloc.h>
-#include <string.h>
-#include <stdio.h>
+#include "structs.h"
 
 void push(struct Node **s, state value) {
     struct Node *temp = (struct Node *) malloc(sizeof(struct Node));
@@ -25,6 +22,10 @@ state peek(struct Node **s) {
         return EMPTY;
 }
 
+
+/*
+ * Функция хеширования
+ */
 unsigned int hash(char key[KEY_SIZE]) {
     unsigned long long result = 0;
     unsigned long long multiplier = 1;
@@ -32,7 +33,7 @@ unsigned int hash(char key[KEY_SIZE]) {
         result = (result + (unsigned long long) key[i] * multiplier) % MAP_SIZE;
         multiplier *= HASH_MULTIPLIER;
     }
-    return (unsigned int) result;
+    return result;
 }
 
 /*

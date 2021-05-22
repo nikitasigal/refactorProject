@@ -1,7 +1,3 @@
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <ctype.h>
 #include "specialSymbols.h"
 
 void processSpecialSymbols(char *input, int inputSize, char *output, int *outputSize) {

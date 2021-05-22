@@ -1,23 +1,4 @@
 #include "checkInitialization.h"
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-/*
- * Структура для переменной. Переменная имеет имя и состояние "инициализирована" / "неинициализирована"
- */
-typedef struct {
-    char value[WORDS];
-    bool isInitialized;
-} VARIABLE;
-
-// Очистка слова
-void clearWord2(char *word, int *wordSize) {
-    for (int l = 0; l < *wordSize; l++)
-        word[l] = 0;
-    (*wordSize) = 0;
-}
 
 // skip версии 3.0. Скипает ненужные знаки, не печатая их, как делает это skip 1.0
 void skip3(const char *input, int *i, int inputSize, int *lineNumber) {
@@ -134,9 +115,7 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         skip3(input, i, inputSize, lineNumber);
 
         // Собираем слово, полагая, что это имя переменной
-        while (isalnum(input[*i]) || input[*i] == '_') {
-            word[(*wordSize)++] = input[(*i)++];
-        }
+        readWord(input, word, wordSize, i);
 
         // Это не переменная
         if (strlen(word) == 0)
@@ -150,8 +129,9 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
 
         // Если мы встретили (, то это функция
         if (input[*i] == '(') {
-            // Пушнем в мап функций
-            insertElement(functionsMap, word, *lineNumber);
+            // Пушнем в мап функций. Функцию main не пушаем!!
+            if (strcmp(word, "main") != 0)
+                insertElement(functionsMap, word, *lineNumber);
 
             // Пропустим () функции
             int bracketSequence = 0;
@@ -169,7 +149,7 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
                 }
                 (*i)++;
             } while (bracketSequence != 0);
-            clearWord2(word, wordSize);
+            clearWord(word, wordSize);
             break;
         }
 
@@ -183,7 +163,7 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         // Пушаем переменную в мап
         insertElement(variablesMap, word, *lineNumber);
 
-        clearWord2(word, wordSize);
+        clearWord(word, wordSize);
         // Мы пришли либо к ',', либо к ';'
     }
 }
@@ -202,16 +182,14 @@ void processScanfs(const char *input, int *t, int inputSize, VARIABLE *variables
         skip3(input, t, inputSize, lineNumber);
 
         // Собираем слово, полагая, что это имя переменной
-        while (isalnum(input[*t]) || input[*t] == '_') {
-            word[wordSize++] = input[(*t)++];
-        }
+        readWord(input, word, &wordSize, t);
 
         // Ищем слово в словаре
         for (int k = 0; k < variableCount; ++k)
             if (!strcmp(variables[k].value, word))
                 variables[k].isInitialized = true;
 
-        clearWord2(word, &wordSize);
+        clearWord(word, &wordSize);
     }
 }
 
@@ -220,38 +198,35 @@ void processScanfs(const char *input, int *t, int inputSize, VARIABLE *variables
  */
 void checkSecondLine(const char *input, int inputSize, char *word, int *wordSize, VARIABLE *variables,
                      int variableCount, int *t, int *lineNumber) {
-    while (input[(*t)] != ';') {
+    while (input[*t] != ';') {
         skip3(input, t, inputSize, lineNumber);
 
         // Собираем слово, полагая, что это имя переменной
-        while (isalnum(input[(*t)]) || input[(*t)] == '_') {
-            word[(*wordSize)++] = input[(*t)++];
-        }
+        readWord(input, word, wordSize, t);
 
         // Может это scanf или fscanf?
         if (!strcmp(word, "scanf") || !strcmp(word, "fscanf")) {
             processScanfs(input, t, inputSize, variables, variableCount, lineNumber);
-            clearWord2(word, wordSize);
+            clearWord(word, wordSize);
             break;
         }
 
         // Это не переменная
-        if (strlen(word) == 0) {
+        if (strlen(word) == 0)
             break;
-        }
 
         skip3(input, t, inputSize, lineNumber);
 
         // Это инициализация
-        if (input[(*t)] == '=') {
-            while (input[(*t)] != ',' && input[(*t)] != ';')
+        if (input[*t] == '=') {
+            while (input[*t] != ',' && input[*t] != ';')
                 (*t)++;
             for (int k = 0; k < variableCount; ++k)
                 if (!strcmp(variables[k].value, word))
                     variables[k].isInitialized = true;
         }
 
-        clearWord2(word, wordSize);
+        clearWord(word, wordSize);
         // Мы пришли либо к ',', либо к ';'
     }
 }
@@ -316,25 +291,25 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
 
             // Пропуск typedef, struct
             if (!strcmp(word, "typedef")) {
-                clearWord2(word, &wordSize);
+                clearWord(word, &wordSize);
                 processTypedef(input, &i, inputSize, lineNumber);
                 continue;
             }
             if (!strcmp(word, "struct")) {
-                clearWord2(word, &wordSize);
+                clearWord(word, &wordSize);
                 if (checkStruct(input, &i, inputSize, lineNumber))
                     continue;
             }
 
             for (int j = 0; j < nowSize && strlen(word) != 0; ++j) {
-                if (!strcmp(now[j].stateName, word) && now[j].value == INIT && strlen(word) != 0) {
+                if (!strcmp(now[j].stateName, word) && now[j].value == INIT) {
                     // Это стек, в которым мы будем заносить переменный временно
                     VARIABLE variables[NUMBER_OF_VARIABLES];
                     int variableCount = 0;
 
                     // Перед началом, скипнем всё ненужное и почислим слово
                     skip3(input, &i, inputSize, lineNumber);
-                    clearWord2(word, &wordSize);
+                    clearWord(word, &wordSize);
 
                     // Скипнем все другие типы данных типа long long int
                     skipTypes(input, &i, inputSize, now, nowSize, lineNumber);
@@ -362,7 +337,7 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
                     clearVariables(variables, variableCount);
                 }
             }
-            clearWord2(word, &wordSize);
+            clearWord(word, &wordSize);
         }
     }
 }

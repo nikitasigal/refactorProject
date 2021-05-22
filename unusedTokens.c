@@ -1,13 +1,4 @@
-#include <ctype.h>
-#include <string.h>
 #include "unusedTokens.h"
-
-// Очистка слова
-void clearWord3(char *word, int *wordSize) {
-    for (int l = 0; l < *wordSize; l++)
-        word[l] = 0;
-    (*wordSize) = 0;
-}
 
 /*
  * Аргументы функций до сего момента игнорировались. Пора это исправить и взять их под опеку
@@ -34,7 +25,7 @@ void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSi
         // Добавляем её в мап
         insertElement(variablesMap, word, *lineNumber);
 
-        clearWord3(word, &wordSize);
+        clearWord(word, &wordSize);
     }
 }
 
@@ -55,12 +46,12 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
 
             // Пропуск typedef, struct
             if (!strcmp(word, "typedef")) {
-                clearWord3(word, &wordSize);
+                clearWord(word, &wordSize);
                 processTypedef(input, &i, inputSize, lineNumber);
                 continue;
             }
             if (!strcmp(word, "struct")) {
-                clearWord3(word, &wordSize);
+                clearWord(word, &wordSize);
                 if (checkStruct(input, &i, inputSize, lineNumber))
                     continue;
             }
@@ -68,21 +59,19 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
             // Дальше пойдёт инициализация, или нет?
             bool wasInitialization = false;
             for (int j = 0; j < nowSize && strlen(word) != 0; ++j) {
-                if (!strcmp(now[j].stateName, word) && now[j].value == INIT && strlen(word) != 0) {
+                if (!strcmp(now[j].stateName, word) && now[j].value == INIT) {
                     // Перед началом, скипнем всё ненужное и почислим слово
                     skip3(input, &i, inputSize, lineNumber);
-                    clearWord3(word, &wordSize);
+                    clearWord(word, &wordSize);
 
                     // Скипнем все другие типы данных типа long long int
                     skipTypes(input, &i, inputSize, now, nowSize, lineNumber);
 
                     // Берём имя переменной / структуры / функции
-                    while (isalnum(input[i]) || input[i] == '_') {
-                        word[wordSize++] = input[i++];
-                    }
+                    readWord(input, word, &wordSize, &i);
 
                     skip3(input, &i, inputSize, lineNumber);
-                    clearWord3(word, &wordSize);
+                    clearWord(word, &wordSize);
 
                     // Если мы встретили (, то это функция. Возьмём её аргументы (так как у нас нет их в мапах)
                     if (strlen(word) != 0 && input[i] == '(')
@@ -98,7 +87,10 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
                 checkElement(functionsMap, word);
             }
 
-            clearWord3(word, &wordSize);
+            clearWord(word, &wordSize);
         }
     }
+
+    printFooMap(functionsMap);
+    printVarMap(variablesMap);
 }

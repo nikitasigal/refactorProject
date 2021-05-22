@@ -1,14 +1,4 @@
-#include <string.h>
-#include <stdbool.h>
-#include <ctype.h>
 #include "newTypes.h"
-
-// Очистка слова
-void clearWord(char *word, int *wordSize) {
-    for (int l = 0; l < *wordSize; l++)
-        word[l] = 0;
-    (*wordSize) = 0;
-}
 
 // skip версии 2.0. Скипает пробелы, \n, \t и комментарии, не печатая их
 void skip2(const char *input, int *i, int inputSize) {
@@ -203,9 +193,7 @@ void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
                         skip2(input, &j, inputSize);
 
                         //Формирование слова
-                        while (isalnum(input[j]) || input[j] == '_') {
-                            word[wordSize++] = input[j++];
-                        }
+                        readWord(input, word, &wordSize, &i);
 
                         //Пропускаем ненужное до следующего символа
                         skip2(input, &j, inputSize);
@@ -214,27 +202,23 @@ void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
                         if (input[j] == '(') {
                             //Проверяем подходит ли под PascalStyle
                             //Нет - закидываем в список сосущих с состоянием FUNC
-                            if (word[0] < 65 || word[0] > 90) {
-                                if (strlen(word) != 0) {
-                                    strcpy(sucks[sucksSize].stateName, word);
-                                    sucks[sucksSize].value = FUNC;
-                                    (sucksSize)++;
-                                }
+                            if ((word[0] < 'A' || word[0] > 'Z') && strlen(word) != 0) {
+                                strcpy(sucks[sucksSize].stateName, word);
+                                sucks[sucksSize].value = FUNC;
+                                (sucksSize)++;
                             }
+
                             multi = true;
                             continue;
                             //Что-либо иное, просто переменная
-                        } else {
+                        } else
                             //Проверяем подходит ли под camelStyle
                             //Нет - закидываем в список сосущих с состоянием INIT
-                            if (word[0] < 97 || word[0] > 122) {
-                                if (strlen(word) != 0) {
-                                    strcpy(sucks[sucksSize].stateName, word);
-                                    sucks[sucksSize].value = INIT;
-                                    (sucksSize)++;
-                                }
+                            if ((word[0] < 'a' || word[0] > 'z') && strlen(word) != 0) {
+                                strcpy(sucks[sucksSize].stateName, word);
+                                sucks[sucksSize].value = INIT;
+                                (sucksSize)++;
                             }
-                        }
 
                         //Проверяем есть ли запятая
                         //Нет - заканчиваем
@@ -249,7 +233,6 @@ void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
                     break;
                 }
             }
-
             clearWord(word, &wordSize);
         }
     }

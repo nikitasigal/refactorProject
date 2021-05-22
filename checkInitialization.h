@@ -4,7 +4,8 @@
 #define NUMBER_OF_VARIABLES 256
 
 #include "definitions.h"
-#include "stack.h"
+#include "structs.h"
+#include "generalFunctions.h"
 
 void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap, int *lineNumber);
 

@@ -1,9 +1,4 @@
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <ctype.h>
 #include "wordHandler.h"
-#include "stack.h"
 
 // TODO это код-тест для создания графа функций. Пусть полежит пока тут
 /*struct funcUsed {
@@ -59,8 +54,6 @@ pushFuncInit(&functions, "biba");
 
 printFunctions(&functions);*/
 //
-
-//TODO память не чистится
 
 void skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
     //TODO !!! пропуск символа #, ибо в define и include происходит форматирование
@@ -138,8 +131,8 @@ bool isElse(char *input, int i) {
 }
 
 void wordHandler(char *input, int inputSize, char *output, int *outputSize, stateTypes *now, int nowSize) {
-    char word[WORDS] = {0};                                                 //Буфер для слова
-    int wordSize = 0;                                                       //Длина слова в буфере
+    char word[WORDS] = {0};                                                    //Буфер для слова
+    int wordSize = 0;                                                          //Длина слова в буфере
 
     struct Node *stateStack = NULL;                                            //Стек состояний
     state lastState = EMPTY;                                                   //lastState. Полезный товарищ, хотя и зачастую бесполезный
@@ -158,12 +151,12 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize, stat
 
         if (isalnum(input[i]) || input[i] == '_') {                            //Формирование слова
             word[wordSize++] = input[i];
-        } else if (strlen(word) != 0) {                                                               //При первом же разделителе, смотрим вышло ли слово
-            for (int j = 0; j < nowSize; ++j) {                    //Пробегаемся по ключ-словам
-                if (!strcmp(word, now[j].stateName)) {                         //Нашли ли?               Вероятно FUNCT.
+        } else if (strlen(word) != 0) {                                        //При первом же разделителе, смотрим вышло ли слово
+            for (int j = 0; j < nowSize; ++j) {                                //Пробегаемся по ключ-словам
+                if (!strcmp(word, now[j].stateName)) {                         //Нашли ли?
                     if (peek(&stateStack) == TYPEDEF && (now[j].value == INIT || now[j].value == STRUCT)) {  //Если был typedef, смотрим кто же после него
-                       pop(&stateStack);                                                                    //int/char/bool или struct
-                       push(&stateStack, now[j].value);                                                    //Но он, наверное, бесползен. Возможно убрать?
+                       pop(&stateStack);                                                                     //int/char/bool или struct
+                       push(&stateStack, now[j].value);                                                      //Но он, наверное, бесползен. Возможно убрать?
                     } else if (now[j].value == STRUCT) {
                         push(&stateStack, INIT);
                         if (lastState != FOR)
@@ -178,17 +171,14 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize, stat
                         lastState = peek(&stateStack);
                     }
 
-                    if ((input[i] != ' ' && lastState != CASE) && input[i] != ')') {                          //Если после слова не было пробела, ставим
+                    if ((input[i] != ' ' && lastState != CASE) && input[i] != ')') {     //Если после слова не было пробела, ставим
                         sprintf(output + (*outputSize)++, " ");            //Ex.: for_(;;)  while_()  if_()
                     }
                     break;                                                               //Ну и всё, хватит с меня
                 }
             }
 
-            // TODO У нас уже есть функция clearWord. Сделать отдельный файл с мелкими функциями?
-            for (int l = 0; l < wordSize; l++)                                           //Просто операция очистки слова
-                word[l] = 0;                                                             //FUNCT.
-            wordSize = 0;
+            clearWord(word, &wordSize);
         }
 
         switch (peek(&stateStack)) {
@@ -335,7 +325,6 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize, stat
                 switch (input[i]) {
                     case ':': {                                                                  //Встретили ':'
                         tabsCount++;
-                        //TODO Comment, Space and other skip   FUNCT
 
                         if (input[i - 1] == ' ')                                                 // Убираем лишний пробел между case и ':'
                             outputSize--;
@@ -449,7 +438,6 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize, stat
                     }
                     default: {
                         //Все остальные символы
-                        //TODO Comment, Space and other skip
                         skip(input, output, &i, outputSize, inputSize);
                         if (lastState == FOR && (input[i] == '{' || input[i + 1] == '{')) {                            //Установка FOR_BODY, FOR_SINGLE, IF_BODY, IF_SINGLE
                             push(&stateStack, FOR_BODY);                                //а также, чтобы не мешал при вложенности IF ставит \n, если у него есть тело

@@ -2,8 +2,9 @@
 #define REFACTORPROJECT_UNUSEDTOKENS_H
 
 #include "definitions.h"
-#include "stack.h"
+#include "structs.h"
 #include "checkInitialization.h"
+#include "generalFunctions.h"
 
 void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap, int *lineNumber);
 
