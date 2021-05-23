@@ -75,7 +75,7 @@ void skipSpecialWords(const char *input, int inputSize, const char specialWords[
  * и взять имя.
  * В ином случае, нам надо пропустить все типы данных (long long int и подобное) и взять имя
  */
-void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
+void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize) {
     char word[WORDS] = {0};
     int wordSize = 0;
 
@@ -193,7 +193,7 @@ void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
                         skip2(input, &j, inputSize);
 
                         //Формирование слова
-                        readWord(input, word, &wordSize, &i);
+                        readWord(input, word, &wordSize, &j);
 
                         //Пропускаем ненужное до следующего символа
                         skip2(input, &j, inputSize);
@@ -211,15 +211,26 @@ void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
                             multi = true;
                             continue;
                             //Что-либо иное, просто переменная
-                        } else
-                            //Проверяем подходит ли под camelStyle
-                            //Нет - закидываем в список сосущих с состоянием INIT
-                            if ((word[0] < 'a' || word[0] > 'z') && strlen(word) != 0) {
+                        } else {
+
+                            if ((word[0] < 'a' || word[0] > 'z') &&
+                                l < initialSize && now[l].value != STRUCT &&
+                                strlen(word) != 0) {
+
                                 strcpy(sucks[sucksSize].stateName, word);
                                 sucks[sucksSize].value = INIT;
                                 (sucksSize)++;
-                            }
 
+                            } else if ((word[0] < 'A' || word[0] > 'Z') &&
+                                       (l >= initialSize || now[l].value == STRUCT) &&
+                                       strlen(word) != 0) {
+
+                                strcpy(sucks[sucksSize].stateName, word);
+                                sucks[sucksSize].value = INIT;
+                                (sucksSize)++;
+
+                            }
+                        }
                         //Проверяем есть ли запятая
                         //Нет - заканчиваем
                         if (input[j] != ',') {
@@ -234,6 +245,18 @@ void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
                 }
             }
             clearWord(word, &wordSize);
+        }
+    }
+
+    for (int i = 0; i < sucksSize; i++){
+        if (sucks[i].value == INIT){
+            printf("The variable '%s' is named wrong\n", sucks[i].stateName);
+        }
+    }
+
+    for (int i = 0; i < sucksSize; i++){
+        if (sucks[i].value == FUNC){
+            printf("The function '%s' is named wrong\n", sucks[i].stateName);
         }
     }
 }
