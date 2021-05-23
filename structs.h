@@ -69,4 +69,32 @@ state pop(struct Node **s);
 
 state peek(struct Node **s);
 
+
+// TREE
+struct TreeNode {
+    char value[WORDS];
+    bool isRecursive;
+    int childCount;
+    struct TreeNode *child[100];
+    struct TreeNode *parent;
+};
+
+struct TreeNode *
+addNode(struct TreeNode *tree, struct TreeNode *curNode, struct TreeNode *nodeParent, char *value, char *parent);
+
+
+// TREE-STACK
+struct stackTreeNode {
+    struct TreeNode *tree;
+    struct stackTreeNode *next;
+};
+
+// FOREST
+typedef struct {
+    struct stackTreeNode *trees;
+    int size;
+} Forest;
+
+void pushTree(Forest **forest, struct TreeNode *tree);
+
 #endif //REFACTORPROJECT_STRUCTS_H

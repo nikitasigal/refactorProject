@@ -135,3 +135,103 @@ void printVarMap(Map *m) {
         if (!m[id].empty)
             printf("Line %d: variable '%s' is never used\n", m[id].line, m[id].key);
 }
+
+
+void pushTree(Forest **forest, struct TreeNode *tree) {
+    /*if ((*forest)->trees == NULL)
+        (*forest)->trees->next = NULL;*/
+    struct stackTreeNode *temp = (struct stackTreeNode *) malloc(sizeof(struct stackTreeNode));
+    temp->tree = tree;
+    temp->next = (*forest)->trees;
+    (*forest)->trees = temp;
+    (*forest)->size++;
+}
+
+
+
+
+struct TreeNode *find(struct TreeNode *tree, char *value) {
+    struct TreeNode *temp;
+    if (!strcmp(tree->value, value) && tree->isRecursive == false) {
+        return tree;
+    } else {
+        for (int i = 0; i < tree->childCount; ++i) {
+            if ((temp = find(tree->child[i], value)) != NULL)
+                return temp;
+        }
+    }
+
+    if (tree->childCount == 0)
+        return NULL;
+
+    return temp;
+}
+
+bool processRecursion(struct TreeNode *tree, char *value, char *parent) {
+    if (!strcmp(tree->value, value)) {
+        // Это рекурсия
+        return true;
+    } else if (tree->parent == NULL) {
+        // Это не рекурсия
+        return false;
+    } else {
+        // Идём в родителя
+        processRecursion(tree->parent, value, parent);
+    }
+}
+
+struct TreeNode *
+addNode(struct TreeNode *tree, struct TreeNode *curNode, struct TreeNode *nodeParent, char *value, char *parent) {
+    if (curNode != NULL && processRecursion(find(tree, parent), value, parent)) {
+        //find(tree, parent)->isRecursive = true;
+        struct TreeNode *temp;
+        while ((temp = find(tree, parent)) != NULL) {
+            while (strcmp(temp->value, value) != 0) {
+                temp->isRecursive = true;
+                temp = temp->parent;
+            }
+            curNode->isRecursive = true;
+        }
+
+        return curNode;
+    }
+    if (curNode == NULL) {
+        curNode = (struct TreeNode *) malloc(sizeof(struct TreeNode));
+        curNode->parent = nodeParent;
+        curNode->childCount = 0;
+        curNode->isRecursive = false;
+        strcpy(curNode->value, value);
+        if (nodeParent != NULL)
+            nodeParent->child[nodeParent->childCount++] = curNode;
+    } else if (!strcmp(value, curNode->value)) {
+        // Это рекурсия?
+        if (processRecursion(find(tree, parent), value, parent)) {
+            //find(tree, parent)->isRecursive = true;
+            struct TreeNode *temp;
+            while ((temp = find(tree, parent)) != NULL) {
+                while (strcmp(temp->value, value) != 0) {
+                    temp->isRecursive = true;
+                    temp = temp->parent;
+                }
+                curNode->isRecursive = true;
+            }
+
+            return curNode;
+        }
+    } else if (!strcmp(parent, curNode->value)) {
+        // Мы нашли вершину, к которой нужно присобачить дитя
+        // Проверим, нет ли уже этой функции в дереве
+        for (int i = 0; i < curNode->childCount; ++i)
+            if (!strcmp(value, curNode->child[i]->value))
+                return NULL;
+
+        curNode->child[curNode->childCount] = NULL;
+        addNode(tree, curNode->child[curNode->childCount], curNode, value, parent);
+    } else {
+        for (int i = 0; i < curNode->childCount; ++i) {
+            addNode(tree, curNode->child[i], curNode, value, parent);
+        }
+    }
+
+    return curNode;
+}
