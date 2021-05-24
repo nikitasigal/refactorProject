@@ -26,6 +26,7 @@ int main() {
 
     //now - Массив состояний + их отдельного слова. nowSize - изначальный размер массива (он увеличится, если будут новые типы данных)
     int nowSize = 19;
+    int initialSize = nowSize;
     stateTypes now[WORDS_FOR_STATE_NUM] = {{"while",   FOR},
                                            {"for",     FOR},
                                            {"switch",  IF},
@@ -75,7 +76,7 @@ int main() {
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
     // Step 2 - custom data types and checking for the correctness of variables and functions TODO many files
-    newTypes(now, &nowSize, sourceText, sourceSize);
+    newTypes(now, &nowSize, initialSize, sourceText, sourceSize);
 
     // Step 3 - formatting
     wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
