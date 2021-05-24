@@ -54,7 +54,8 @@ void skipComments2(const char *input, int inputSize, int *i, int *lineNumber) {
 }
 
 // FOREST
-void getInit(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize) {
+void
+getInit(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize) {
     char word[WORDS] = {0};
     int wordSize = 0;
 
@@ -80,7 +81,7 @@ void getInit(Forest *forest, char *input, int inputSize, stateTypes *now, int no
                     skip4(input, &i, inputSize, NULL);
                     if (input[i] == '(') {
                         struct TreeNode *tree = NULL;
-                        tree = addNode(NULL, tree, NULL, word, NULL);
+                        tree = addNode(NULL, tree, NULL, word, NULL, forest);
                         pushTree(&forest, tree);
                     }
                 }
@@ -90,7 +91,8 @@ void getInit(Forest *forest, char *input, int inputSize, stateTypes *now, int no
     }
 }
 
-void getUsed(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize) {
+void
+getUsed(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize) {
     char word[WORDS] = {0};
     int wordSize = 0;
 
@@ -108,9 +110,7 @@ void getUsed(Forest *forest, char *input, int inputSize, stateTypes *now, int no
                 bracketSequence++;
             if (input[i] == '}')
                 bracketSequence--;
-if (!strcmp(word, "getInit")) {
-    printf("asd");
-}
+
             // Если bracketSequence == 0, сбрасываем currentFoo
             if (bracketSequence == 0) {
                 int tempSize = (int)strlen(currentFoo);
@@ -158,7 +158,7 @@ if (!strcmp(word, "getInit")) {
                         if (!strcmp(currentFoo, currentFooTree->tree->value)) {
                             // Добавляем в найденное дерево дитя
                             addNode(currentFooTree->tree, currentFooTree->tree, NULL, foundWordTree->tree->value,
-                                    currentFooTree->tree->value);
+                                    currentFooTree->tree->value, forest);
                             added = true;
                             break;
                         } else {
@@ -191,8 +191,9 @@ void buildTree(Forest *forest, struct TreeNode *curTree, struct TreeNode *child)
 
             // Переберём детей найденного дерева
             for (int i = 0; i < tempTree->tree->childCount; ++i) {
-                addNode(curTree, child, NULL, tempTree->tree->child[i]->value, child->value);
-                buildTree(forest, curTree, tempTree->tree->child[i]);
+                clearTree(curTree);
+                if(addNode(curTree, curTree, NULL, tempTree->tree->child[i]->value, child->value, forest) != NULL)
+                    buildTree(forest, curTree, tempTree->tree->child[i]);
             }
         }
         tempTree = tempTree->next;
@@ -200,18 +201,31 @@ void buildTree(Forest *forest, struct TreeNode *curTree, struct TreeNode *child)
 }
 
 void checkRecursion(char *input, int inputSize, stateTypes *now, int nowSize) {
+    // Лес. Корни каждого дерева - функция, которая инициализировалась пользователем
     Forest *forest = (Forest *) malloc(sizeof (Forest));
     forest->size = 0;
     forest->trees = NULL;
+
     getInit(forest, input, inputSize, now, nowSize);
     getUsed(forest, input, inputSize, now, nowSize);
 
     struct stackTreeNode *tempTree = forest->trees;
     while (tempTree != NULL) {
         // Переберём все вершины из второго уровня дерева и достроим их
-        for (int i = 0; i < 1/*tempTree->tree->childCount*/; ++i) {
-            buildTree(forest, tempTree->tree, tempTree->tree->child[i]);
-        }
+        if (!tempTree->tree->isNeeded)
+            for (int i = 0; i < tempTree->tree->childCount; ++i) {
+                clearTree(tempTree->tree);
+                buildTree(forest, tempTree->tree, tempTree->tree->child[i]);
+            }
         tempTree = tempTree->next;
+    }
+
+    // Вывод
+    for (int i = 0; i < chains.size; ++i) {
+        printf("Recursion chain: ");
+        for (int j = chains.value[i].size - 1; j >= 0; --j) {
+            printf("%s - ", chains.value[i].value[j]);
+        }
+        printf("%s\n", chains.value[i].value[chains.value[i].size - 1]);
     }
 }

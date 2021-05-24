@@ -11,6 +11,7 @@
 #define WORDS_FOR_STATE_NUM 200         // Размер массива состояний
 #define TEXT_SIZE 100000                // Размер текста
 #define SPECIAL_WORDS_NUMBER 9          // Количество типов данных в Си. unsigned, long, int, char и т.п.
+#define POW_2_7 100
 
 #define KEY_SIZE 50
 #define MAP_SIZE 101

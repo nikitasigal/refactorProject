@@ -70,18 +70,31 @@ state pop(struct Node **s);
 state peek(struct Node **s);
 
 
+// ARRAY
+typedef struct {
+    char value[POW_2_7][POW_2_7];
+    int size;
+} Chain;
+
+typedef struct {
+    Chain value[POW_2_7];
+    int size;
+} ChainArray;
+
+Chain tempChain;
+ChainArray chains;
+
+
 // TREE
 struct TreeNode {
     char value[WORDS];
     bool isRecursive;
+    bool isUsed;
+    bool isNeeded;
     int childCount;
     struct TreeNode *child[100];
     struct TreeNode *parent;
 };
-
-struct TreeNode *
-addNode(struct TreeNode *tree, struct TreeNode *curNode, struct TreeNode *nodeParent, char *value, char *parent);
-
 
 // TREE-STACK
 struct stackTreeNode {
@@ -96,5 +109,12 @@ typedef struct {
 } Forest;
 
 void pushTree(Forest **forest, struct TreeNode *tree);
+
+struct TreeNode *
+addNode(struct TreeNode *tree, struct TreeNode *curNode, struct TreeNode *nodeParent, char *value, char *parent,
+        Forest *forest);
+
+void clearTree(struct TreeNode *tree);
+
 
 #endif //REFACTORPROJECT_STRUCTS_H
