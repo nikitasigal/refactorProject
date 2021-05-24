@@ -5,6 +5,7 @@
 #include "checkInitialization.h"
 #include "unusedTokens.h"
 #include "checkRecursion.h"
+#include "checkLooping.h"
 
 void swapTexts(char *sourceText, int *sourceSize, char *outputText, int *outputSize) {
     strcpy(sourceText, outputText);
@@ -46,6 +47,14 @@ int main() {
                                            {"default", CASE},
                                            {"else",    ELSE}};
 
+    //Все переменные
+    char variables[WORDS][NAME_SIZE] = { 0 };
+    int variablesSize = 0;
+
+    //Все функции
+    char functions[WORDS][NAME_SIZE] = { 0 };
+    int functionsSize = 0;
+
     // Мапы для переменных и функций. Будем помечать, какие были, и использовались ли они
     Map variablesMap[MAP_SIZE], functionsMap[MAP_SIZE];
     initElements(variablesMap);
@@ -62,7 +71,8 @@ int main() {
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
     // Step 2 - custom data types and checking for the correctness of variables and functions TODO many files
-    newTypes(now, &nowSize, initialSize, sourceText, sourceSize);
+    newTypes(now, &nowSize, initialSize, sourceText, sourceSize, variables, &variablesSize,
+                                                                 functions, &functionsSize);
 
     // Step 3 - formatting
     wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
@@ -76,6 +86,9 @@ int main() {
 
     // Step 5 - searching for unused variables and functions TODO many files
     checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
+
+    checkLooping(sourceText, sourceSize, variables, &variablesSize,
+                 functions, &functionsSize);
 
     // Step 6 - revealing recursion chains
     checkRecursion(sourceText, sourceSize, now, nowSize); // TODO file-argument
