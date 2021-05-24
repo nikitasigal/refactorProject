@@ -59,10 +59,11 @@ void pushNewType(stateTypes *now, int *nowSize, const char *input, char *word, i
     }
 }
 
-void skipSpecialWords(const char *input, int inputSize, const char specialWords[][WORDS], int *j) {
-    for (int k = 0; k < SPECIAL_WORDS_NUMBER; ++k) {
-        if (!strncmp(&input[(*j)], specialWords[k], strlen(specialWords[k]))) {
-            (*j) += (int) strlen(specialWords[k]);
+void skipSpecialWords(const char *input, int inputSize, int *j, stateTypes *now, int nowSize) {
+    for (int k = 0; k < nowSize; ++k) {
+        if (!strncmp(&input[(*j)], now[k].stateName, strlen(now[k].stateName)) &&
+            (now[k].value == STRUCT || now[k].value == INIT)) {
+            (*j) += (int) strlen(now[k].stateName);
             k = -1;
             skip2(input, j, inputSize);
         }
@@ -84,12 +85,6 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
 
     stateTypes sucks[WORDS_FOR_STATE_NUM]; //Массив переменных и функций, который сосут = написаны не по стилю
     int sucksSize = 0;                     //Размер этого массива
-
-    // Стандартные типы данных, которые нам стоит пропустить при typedef, например при:
-    // typedef unsigned long long int a; - нам надо пропустить unsigned long long int, чтобы добраться до имени
-    char specialWords[SPECIAL_WORDS_NUMBER][WORDS] = {"struct", "enum", "long",
-                                                      "unsigned", "int", "double",
-                                                      "char", "void", "short"};
 
     for (int i = 0; i < inputSize; ++i) {
         if (isalnum(input[i]) || input[i] == '_') {
@@ -149,7 +144,7 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                 skip2(input, &j, inputSize);
 
                 // Скипаем все типы данных, которые хотим пропустить
-                skipSpecialWords(input, inputSize, specialWords, &j);
+                skipSpecialWords(input, inputSize, &j, now, *nowSize);
 
                 // Если встретили {, то это инициализация структуры / перечисления. Ищем конец инициализации и берём имя
                 if (input[j] == '{') {

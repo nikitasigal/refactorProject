@@ -87,10 +87,11 @@ int main() {
     // Step 5 - searching for unused variables and functions TODO many files
     checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
 
+    // Step 6 - checking for endless loops TODO many files
     checkLooping(sourceText, sourceSize, variables, &variablesSize,
                  functions, &functionsSize);
 
-    // Step 6 - revealing recursion chains
+    // Step 7 - revealing recursion chains
     checkRecursion(sourceText, sourceSize, now, nowSize); // TODO file-argument
 
     // Formatting final - output new code
