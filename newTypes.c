@@ -29,6 +29,8 @@ void skip2(const char *input, int *i, int inputSize) {
                 (*i)++;
         break;
     }
+    /*if (isalnum(input[*i]) || input[*i] == '_')
+        (*i)--;*/
 }
 
 // Пушает новый тип данных в массив stateTypes, очищая
@@ -75,7 +77,8 @@ void skipSpecialWords(const char *input, int inputSize, const char specialWords[
  * и взять имя.
  * В ином случае, нам надо пропустить все типы данных (long long int и подобное) и взять имя
  */
-void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize) {
+void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
+                                                                                          char functions[][NAME_SIZE], int *functionsSize) {
     char word[WORDS] = {0};
     int wordSize = 0;
 
@@ -93,6 +96,9 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
             word[wordSize++] = input[i];
         } else {
             skip2(input, &i, inputSize);
+
+            if (isalnum(input[i]) || input[i] == '_')
+                (i)--;
 
             // Не надо нам пустые слова обрабатывать. Могут возникнуть ошибки, при strcmp
             if (strlen(word) == 0)
@@ -208,6 +214,19 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                                 (sucksSize)++;
                             }
 
+                            bool exists = false;
+
+                            for (int k = 0; k < (*functionsSize); k++){
+                                if (!strcmp(functions[k], word)){
+                                    exists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!exists){
+                                strcpy(functions[(*functionsSize)++], word);
+                            }
+
                             multi = true;
                             continue;
                             //Что-либо иное, просто переменная
@@ -229,6 +248,20 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                                 sucks[sucksSize].value = INIT;
                                 (sucksSize)++;
 
+                            }
+
+                            bool exists = false;
+
+                            for (int k = 0; k < (*variablesSize); k++){
+                                if (!strcmp(variables[k], word)){
+                                    exists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!exists){
+                                strcpy(variables[(*variablesSize)], word);
+                                (*variablesSize)++;
                             }
                         }
                         //Проверяем есть ли запятая
