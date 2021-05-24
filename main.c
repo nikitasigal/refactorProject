@@ -51,20 +51,6 @@ int main() {
     initElements(variablesMap);
     initElements(functionsMap);
 
-
-    //
-    /*struct TreeNode *tree = NULL;
-    tree = addNode(NULL, tree, NULL, "a", NULL);
-    addNode(tree, tree, NULL, "b", "a");
-    addNode(tree, tree, NULL, "c", "a");
-    addNode(tree, tree, NULL, "d", "c");
-    addNode(tree, tree, NULL, "d", "b");
-
-    addNode(tree, tree, NULL, "a", "d");*/
-    //addNode("a", "b", tree, NULL);
-
-    //
-
     // Переменная для определения номера строки в файле
     int lineNumber = 1;
 
@@ -91,6 +77,7 @@ int main() {
     // Step 5 - searching for unused variables and functions TODO many files
     checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
 
+    // Step 6 - revealing recursion chains
     checkRecursion(sourceText, sourceSize, now, nowSize); // TODO file-argument
 
     // Formatting final - output new code

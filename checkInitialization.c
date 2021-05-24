@@ -1,51 +1,5 @@
 #include "checkInitialization.h"
 
-// skip версии 3.0. Скипает ненужные знаки, не печатая их, как делает это skip 1.0
-void skip3(const char *input, int *i, int inputSize, int *lineNumber) {
-    while (*i < inputSize) {
-        // Пропускаем пробелы, \n, \t
-        if (input[*i] == ' ' || input[*i] == '\n' || input[*i] == '\t' || input[*i] == ',' || input[*i] == '*' ||
-            input[*i] == '&') {
-
-            if (lineNumber != NULL && input[*i] == '\n')
-                (*lineNumber)++;
-            (*i)++;
-            continue;
-        }
-
-        // Пропускаем кавычки
-        if (input[*i] == '\'') {
-            (*i)++;
-            while ((input[*i - 1] == '\\' && input[*i - 2] != '\\') || input[*i] != '\'')
-                (*i)++;
-            (*i)++;
-            continue;
-        }
-        if (input[*i] == '"') {
-            (*i)++;
-            while (input[*i - 1] == '\\' || input[*i] != '"')
-                (*i)++;
-            (*i)++;
-            continue;
-        }
-
-        // Пропускаем комментарии
-        if (input[*i] == '/') {
-            if (input[*i + 1] == '/') {
-                while (input[*i] != '\n')
-                    (*i)++;
-                continue;
-            } else if (input[*i + 1] == '*') {
-                while (input[*i] != '*' || input[*i + 1] != '/')
-                    (*i)++;
-                *i += 2;
-                continue;
-            }
-        }
-        break;
-    }
-}
-
 /*
  * Скипает typedef с его телом
  */
@@ -76,10 +30,10 @@ bool checkStruct(const char *input, int *i, int inputSize, int *lineNumber) {
     int tempLineNumber = *lineNumber;
 
     // Скипнем комментарии, потом имя структуры (даже если его нет), потом опять комментарии
-    skip3(input, &j, inputSize, &tempLineNumber);
+    universalSkip(input, &j, inputSize, &tempLineNumber);
     while (isalnum(input[j]) || input[j] == '_')
         j++;
-    skip3(input, &j, inputSize, &tempLineNumber);
+    universalSkip(input, &j, inputSize, &tempLineNumber);
 
     // Это объявление структуры? Если да, то должна быть {
     if (input[j] == '{')
@@ -112,7 +66,7 @@ bool checkVariables(VARIABLE *variables, int variableCount) {
 void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *variables, int *wordSize, int *i,
                     int *variableCount, Map *functionsMap, Map *variablesMap, int *lineNumber) {
     while (input[*i] != ';') {
-        skip3(input, i, inputSize, lineNumber);
+        universalSkip(input, i, inputSize, lineNumber);
 
         // Собираем слово, полагая, что это имя переменной
         readWord(input, word, wordSize, i);
@@ -121,7 +75,7 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         if (strlen(word) == 0)
             break;
 
-        skip3(input, i, inputSize, lineNumber);
+        universalSkip(input, i, inputSize, lineNumber);
 
         // Массивы имеют начальное значение по умолчанию (ноль), не трогаем их
         if (input[*i] == '[')
@@ -131,12 +85,12 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         if (input[*i] == '(') {
             // Пушнем в мап функций. Функцию main не пушаем!!
             if (strcmp(word, "main") != 0)
-                insertElement(functionsMap, word, *lineNumber);
+                insertElement(functionsMap, word, *lineNumber, true);
 
             // Пропустим () функции
             int bracketSequence = 0;
             do {
-                skip3(input, i, inputSize, lineNumber);
+                universalSkip(input, i, inputSize, lineNumber);
                 if (input[*i] == '(') {
                     bracketSequence++;
                     (*i)++;
@@ -154,14 +108,16 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         }
 
         // Это не инициализация, запоминаем имя переменной в стек
-        if (input[*i] != '=')
+        if (input[*i] != '=') {
+            variables[*variableCount].line = *lineNumber;
             strcpy(variables[(*variableCount)++].value, word);
+        }
         else
             while (input[*i] != ',' && input[*i] != ';')
                 (*i)++;
 
         // Пушаем переменную в мап
-        insertElement(variablesMap, word, *lineNumber);
+        insertElement(variablesMap, word, *lineNumber, false);
 
         clearWord(word, wordSize);
         // Мы пришли либо к ',', либо к ';'
@@ -179,7 +135,7 @@ void processScanfs(const char *input, int *t, int inputSize, VARIABLE *variables
     int wordSize = 0;
 
     while (input[*t] != ')') {
-        skip3(input, t, inputSize, lineNumber);
+        universalSkip(input, t, inputSize, lineNumber);
 
         // Собираем слово, полагая, что это имя переменной
         readWord(input, word, &wordSize, t);
@@ -199,7 +155,7 @@ void processScanfs(const char *input, int *t, int inputSize, VARIABLE *variables
 void checkSecondLine(const char *input, int inputSize, char *word, int *wordSize, VARIABLE *variables,
                      int variableCount, int *t, int *lineNumber) {
     while (input[*t] != ';') {
-        skip3(input, t, inputSize, lineNumber);
+        universalSkip(input, t, inputSize, lineNumber);
 
         // Собираем слово, полагая, что это имя переменной
         readWord(input, word, wordSize, t);
@@ -215,7 +171,7 @@ void checkSecondLine(const char *input, int inputSize, char *word, int *wordSize
         if (strlen(word) == 0)
             break;
 
-        skip3(input, t, inputSize, lineNumber);
+        universalSkip(input, t, inputSize, lineNumber);
 
         // Это инициализация
         if (input[*t] == '=') {
@@ -237,7 +193,7 @@ void checkSecondLine(const char *input, int inputSize, char *word, int *wordSize
 void printNotInitialized(const VARIABLE *variables, int variableCount) {
     for (int k = 0; k < variableCount; ++k)
         if (!variables[k].isInitialized)
-            printf("A variable '%s' is not initialized\n", variables[k].value);
+            printf("Line %d: variable '%s' is not initialized\n", variables[k].line, variables[k].value);
 }
 
 /*
@@ -248,7 +204,7 @@ void skipTypes(char *input, int *i, int inputSize, stateTypes *now, int nowSize,
         if (now[j].value == INIT && !strncmp(&input[(*i)], now[j].stateName, strlen(now[j].stateName))) {
             *i += (int) strlen(now[j].stateName);
             j = -1;
-            skip3(input, i, inputSize, lineNumber);
+            universalSkip(input, i, inputSize, lineNumber);
         }
     }
 }
@@ -259,16 +215,6 @@ void skipTypes(char *input, int *i, int inputSize, stateTypes *now, int nowSize,
 void clearVariables(VARIABLE *variables, int variableCount) {
     for (int i = 0; i < variableCount; ++i)
         variables[i].isInitialized = false;
-}
-
-/*
- * Скипает ТОЛЬКО комментарии. У меня были какие-то проблемы с функцией skip3
- */
-void skipComments(const char *input, int inputSize, int *i, int *lineNumber) {
-    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*' || input[*i] == '"' || input[*i] == '\'') {
-        skip3(input, i, inputSize, lineNumber);
-        --(*i);
-    }
 }
 
 /*
@@ -308,7 +254,7 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
                     int variableCount = 0;
 
                     // Перед началом, скипнем всё ненужное и почислим слово
-                    skip3(input, &i, inputSize, lineNumber);
+                    universalSkip(input, &i, inputSize, lineNumber);
                     clearWord(word, &wordSize);
 
                     // Скипнем все другие типы данных типа long long int

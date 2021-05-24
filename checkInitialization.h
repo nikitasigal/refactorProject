@@ -9,10 +9,6 @@
 
 void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap, int *lineNumber);
 
-void skip3(const char *input, int *i, int inputSize, int *lineNumber);
-
-void skipComments(const char *input, int inputSize, int *i, int *lineNumber);
-
 void processTypedef(const char *input, int *i, int inputSize, int *lineNumber);
 
 bool checkStruct(const char *input, int *i, int inputSize, int *lineNumber);

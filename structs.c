@@ -49,7 +49,7 @@ void initElements(Map *m) {
 /*
  * Вносит элемент в мап
  */
-void insertElement(Map *m, char *key, int lineNumber) {
+void insertElement(Map *m, char *key, int lineNumber, bool isFoo) {
     unsigned int id = hash(key);
 
     if (m[id].empty) {
@@ -58,6 +58,9 @@ void insertElement(Map *m, char *key, int lineNumber) {
         m[id].line = lineNumber;
         return;
     }
+
+    if (isFoo)
+        return;
 
     unsigned int start = id;
     id = (id + 1) % MAP_SIZE;
@@ -76,9 +79,6 @@ void insertElement(Map *m, char *key, int lineNumber) {
 /*
  * Проверяет, есть ли данный элемент в мапе, а если есть, то устанавливает empty
  */
-
-// TODO!!! изменить поиск элемента. Пример в input'e
-// upd. сделано вроде?
 void checkElement(Map *m, char *key) {
     unsigned int id = hash(key);
 
@@ -140,159 +140,9 @@ void printVarMap(Map *m) {
 void pushTree(Forest **forest, struct TreeNode *tree) {
     /*if ((*forest)->trees == NULL)
         (*forest)->trees->next = NULL;*/
-    struct stackTreeNode *temp = (struct stackTreeNode *) malloc(sizeof(struct stackTreeNode));
+    struct StackTreeNode *temp = (struct StackTreeNode *) malloc(sizeof(struct StackTreeNode));
     temp->tree = tree;
     temp->next = (*forest)->trees;
     (*forest)->trees = temp;
     (*forest)->size++;
-}
-
-
-
-
-struct TreeNode *find(struct TreeNode *tree, char *value) {
-    struct TreeNode *temp;
-    if (!strcmp(tree->value, value)) {
-        if (tree->isUsed)
-            return NULL;
-        return tree;
-    } else {
-        for (int i = 0; i < tree->childCount; ++i) {
-            temp = find(tree->child[i], value);
-            if (temp != NULL && temp->isUsed != true) {
-                //temp->isUsed = true;
-                return temp;
-            }
-        }
-    }
-
-    if (tree->childCount == 0)
-        return NULL;
-
-    return NULL;
-}
-
-bool processRecursion(struct TreeNode *tree, char *value, char *parent) {
-    if (tree == NULL)
-        return NULL;
-    if (!strcmp(tree->value, value)) {
-        // Это рекурсия
-        return true;
-    } else if (tree->parent == NULL) {
-        // Это не рекурсия
-        return false;
-    } else {
-        // Идём в родителя
-        processRecursion(tree->parent, value, parent);
-    }
-}
-
-void clearTree(struct TreeNode *tree) {
-    if (tree == NULL)
-        return;
-    tree->isUsed = false;
-    for (int i = 0; i < tree->childCount; ++i) {
-        clearTree(tree->child[i]);
-    }
-}
-
-struct TreeNode *
-addNode(struct TreeNode *tree, struct TreeNode *curNode, struct TreeNode *nodeParent, char *value, char *parent,
-        Forest *forest) {
-    if (curNode == NULL) {
-        curNode = (struct TreeNode *) malloc(sizeof(struct TreeNode));
-        curNode->parent = nodeParent;
-        curNode->childCount = 0;
-        curNode->isRecursive = false;
-        curNode->isUsed = false;
-        strcpy(curNode->value, value);
-        if (nodeParent != NULL)
-            nodeParent->child[nodeParent->childCount++] = curNode;
-        return curNode;
-    } else if (!strcmp(value, curNode->value)) {
-        // Это рекурсия?
-        if (processRecursion(find(tree, parent), value, parent)) {
-            //find(tree, parent)->isRecursive = true;
-            clearTree(tree);
-            struct TreeNode *temp;
-
-            while ((temp = find(tree, parent)) != NULL) {
-                if (processRecursion(temp, value, parent)) {
-                    //printf("Recursion chain: ");
-                    while (strcmp(temp->value, value) != 0) {
-                        //printf("%s - ", temp->value);
-                        //
-                        strcpy(tempChain.value[tempChain.size++], temp->value);
-
-                        // Пометив вершину, как рекурсивную в лесу
-                        struct stackTreeNode *tempTree = forest->trees;
-                        while (tempTree != NULL) {
-                            if (!strcmp(tempTree->tree->value, temp->value))
-                                tempTree->tree->isNeeded = true;
-                            tempTree = tempTree->next;
-                        }
-
-                        temp->isUsed = true;
-                        temp->isRecursive = true;
-                        temp = temp->parent;
-                    }
-                    strcpy(tempChain.value[tempChain.size++], temp->value);
-
-                    // Проверка
-                    bool was = false;
-                    for (int i = 0; i < chains.size; ++i) {
-                        if (tempChain.size != chains.value[i].size)
-                            continue;
-
-                        bool used = true;
-                        for (int j = 0; j < tempChain.size; ++j) {
-                            if (strcmp(tempChain.value[j], chains.value[i].value[j]) != 0) {
-                                used = false;
-                                break;
-                            }
-                        }
-
-                        if (used) {
-                            was = true;
-                            break;
-                        }
-                    }
-
-                    if (!was) {
-                        for (int i = 0; i < tempChain.size; ++i) {
-                            strcpy(chains.value[chains.size].value[i], tempChain.value[i]);
-                            chains.value[chains.size].size++;
-                        }
-                        chains.size++;
-                    }
-
-                    tempChain.size = 0;
-
-                    //printf("%s\n", temp->value);
-                    temp->isUsed = true;
-                    temp->isRecursive = true;
-                } else {
-                    temp->isUsed = true;
-                }
-            }
-
-            return NULL;
-        }
-    } else if (!strcmp(parent, curNode->value)) {
-        // Мы нашли вершину, к которой нужно присобачить дитя
-        // Проверим, нет ли уже этой функции в дереве
-        for (int i = 0; i < curNode->childCount; ++i)
-            if (!strcmp(value, curNode->child[i]->value))
-                return NULL;
-
-        curNode->child[curNode->childCount] = NULL;
-        addNode(tree, curNode->child[curNode->childCount], curNode, value, parent, forest);
-    } else {
-        for (int i = 0; i < curNode->childCount; ++i) {
-            if(addNode(tree, curNode->child[i], curNode, value, parent, forest) == NULL)
-                return NULL;
-        }
-    }
-
-    return curNode;
 }

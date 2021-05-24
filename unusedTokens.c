@@ -12,7 +12,7 @@ void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSi
     (*i)++;
 
     while (input[*i] != ')') {
-        skip3(input, i, inputSize, lineNumber);
+        universalSkip(input, i, inputSize, lineNumber);
 
         // Скипаем типы данных
         skipTypes(input, i, inputSize, now, nowSize, lineNumber);
@@ -23,7 +23,7 @@ void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSi
         }
 
         // Добавляем её в мап
-        insertElement(variablesMap, word, *lineNumber);
+        insertElement(variablesMap, word, *lineNumber, false);
 
         clearWord(word, &wordSize);
     }
@@ -61,7 +61,7 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
             for (int j = 0; j < nowSize && strlen(word) != 0; ++j) {
                 if (!strcmp(now[j].stateName, word) && now[j].value == INIT) {
                     // Перед началом, скипнем всё ненужное и почислим слово
-                    skip3(input, &i, inputSize, lineNumber);
+                    universalSkip(input, &i, inputSize, lineNumber);
                     clearWord(word, &wordSize);
 
                     // Скипнем все другие типы данных типа long long int
@@ -70,7 +70,7 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
                     // Берём имя переменной / структуры / функции
                     readWord(input, word, &wordSize, &i);
 
-                    skip3(input, &i, inputSize, lineNumber);
+                    universalSkip(input, &i, inputSize, lineNumber);
                     clearWord(word, &wordSize);
 
                     // Если мы встретили (, то это функция. Возьмём её аргументы (так как у нас нет их в мапах)

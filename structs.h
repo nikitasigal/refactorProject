@@ -9,6 +9,7 @@
 typedef struct {
     char value[WORDS];
     bool isInitialized;
+    int line;
 } VARIABLE;
 
 /*
@@ -43,7 +44,7 @@ typedef struct  {
 
 void initElements(Map *m);
 
-void insertElement(Map *m, char *key, int lineNumber);
+void insertElement(Map *m, char *key, int lineNumber, bool isFoo);
 
 void checkElement(Map *m, char *key);
 
@@ -72,12 +73,12 @@ state peek(struct Node **s);
 
 // ARRAY
 typedef struct {
-    char value[POW_2_7][POW_2_7];
+    char value[CHAIN_LENGTH][CHAIN_LENGTH];
     int size;
 } Chain;
 
 typedef struct {
-    Chain value[POW_2_7];
+    Chain value[CHAIN_LENGTH];
     int size;
 } ChainArray;
 
@@ -92,29 +93,25 @@ struct TreeNode {
     bool isUsed;
     bool isNeeded;
     int childCount;
-    struct TreeNode *child[100];
+    struct TreeNode *child[CHAIN_LENGTH];
     struct TreeNode *parent;
 };
 
+
 // TREE-STACK
-struct stackTreeNode {
+struct StackTreeNode {
     struct TreeNode *tree;
-    struct stackTreeNode *next;
+    struct StackTreeNode *next;
 };
+
 
 // FOREST
 typedef struct {
-    struct stackTreeNode *trees;
+    struct StackTreeNode *trees;
     int size;
 } Forest;
 
 void pushTree(Forest **forest, struct TreeNode *tree);
-
-struct TreeNode *
-addNode(struct TreeNode *tree, struct TreeNode *curNode, struct TreeNode *nodeParent, char *value, char *parent,
-        Forest *forest);
-
-void clearTree(struct TreeNode *tree);
 
 
 #endif //REFACTORPROJECT_STRUCTS_H
