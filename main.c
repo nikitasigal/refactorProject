@@ -83,9 +83,10 @@ int main() {
     int functionsSize = 0;
 
     // Мапы для переменных и функций. Будем помечать, какие были, и использовались ли они
-    Map variablesMap[MAP_SIZE], functionsMap[MAP_SIZE];
+    Map variablesMap[MAP_SIZE], functionsMap[MAP_SIZE], variablesInitMap[MAP_SIZE];
     initElements(variablesMap);
     initElements(functionsMap);
+    initElements(variablesInitMap);
 
     // Переменная для определения номера строки в файле
     int lineNumber = 1;
@@ -137,10 +138,12 @@ int main() {
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
         // Step 4 - checking for initialization of variables TODO many files
-        checkInit(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber, files[i]);
+        checkInit(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, variablesInitMap, &lineNumber,
+                  files[i]);
     }
 
-    // Дособираем инициализации переменных и проверяем на использование
+    // Дособираем инициализации переменных для мапа неиспользованных переменных и проверяем на использование переменные
+    // и функции STEP 3
     for (int i = 0; i < fileCount; ++i) {
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
@@ -148,7 +151,7 @@ int main() {
         checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber, files[i]);
     }
 
-    // Проанализируем каждый файл STEP 3
+    // Проанализируем каждый файл STEP 4
     for (int i = 0; i < fileCount; ++i) {
         printf("----------------------------\nFile '%s':\n----------------------------\n", files[i]);
 
@@ -161,9 +164,13 @@ int main() {
         incorrectWriting(now, &nowSize, initialSize, sourceText, sourceSize, variables, &variablesSize,
                          functions, &functionsSize);
 
-        // Выведем unused
+        // Выведем не инициализированные переменные и неиспользованные переменные и функции
+        printVarInitMap(variablesInitMap, files[i]);
         printFooMap(functionsMap, files[i]);
         printVarMap(variablesMap, files[i]);
+
+        // Рекурсия
+        checkRecursion(sourceText, sourceSize, now, nowSize);
     }
 
 

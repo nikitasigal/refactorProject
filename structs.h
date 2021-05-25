@@ -40,6 +40,7 @@ typedef struct  {
     char key[WORD_LENGTH];
     int line;
     bool empty;
+    bool isInit;
     char fileName[WORD_LENGTH];
 } Map;
 
@@ -48,6 +49,8 @@ void initElements(Map *m);
 void insertElement(Map *m, char *key, int lineNumber, bool isFoo, char *file);
 
 void checkElement(Map *m, char *key);
+
+void printVarInitMap(Map *m, char *fileName);
 
 void printFooMap(Map *m, char *fileName);
 

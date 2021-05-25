@@ -42,7 +42,10 @@ unsigned int hash(char key[KEY_SIZE]) {
 void initElements(Map *m) {
     for (int i = 0; i < MAP_SIZE; ++i) {
         m[i].key[0] = 0;
+        m[i].fileName[0] = 0;
+        m[i].line = -1;
         m[i].empty = true;
+        m[i].isInit = false;
     }
 }
 
@@ -115,6 +118,17 @@ void sortMap(Map *m) {
             --j;
         }
     }
+}
+
+/*
+ * Выводим мап неинициализированных переменных
+ */
+void printVarInitMap(Map *m, char *fileName) {
+    printf("\nNot initialized variables:\n");
+    sortMap(m);
+    for (int id = 0; id < MAP_SIZE; ++id)
+        if (m[id].line != -1 && !strcmp(m[id].fileName, fileName))
+            printf("Line %d: variable '%s' is not initialized\n", m[id].line, m[id].key);
 }
 
 /*

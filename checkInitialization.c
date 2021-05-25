@@ -188,15 +188,6 @@ void checkSecondLine(const char *input, int inputSize, char *word, int *wordSize
 }
 
 /*
- * Распечатывает неинициализированные переменные
- */
-void printNotInitialized(const VARIABLE *variables, int variableCount) {
-    for (int k = 0; k < variableCount; ++k)
-        if (!variables[k].isInitialized)
-            printf("Line %d: variable '%s' is not initialized\n", variables[k].line, variables[k].value);
-}
-
-/*
  * Скипает длинные типы данных, например: long long int
  */
 void skipTypes(char *input, int *i, int inputSize, stateTypes *now, int nowSize, int *lineNumber) {
@@ -221,7 +212,7 @@ void clearVariables(VARIABLE *variables, int variableCount) {
  * Проверка на инициализацию
  */
 void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap,
-               int *lineNumber, char *file) {
+               Map *variablesInitMap, int *lineNumber, char *file) {
     char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
@@ -279,10 +270,11 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
                     checkSecondLine(input, inputSize, word, &wordSize, variables, variableCount, &t, NULL);
 
                     // Закончили проверять. Выводим переменные, которые не инициализировались
-                    printNotInitialized(variables, variableCount);
+                    for (int k = 0; k < variableCount; ++k)
+                        insertElement(variablesInitMap, variables[k].value, variables[k].line, false, file);
 
                     // Очищаем структуру VARIABLE. Из-за того что я не очищал, были баги
-                    //clearVariables(variables, variableCount);
+                    clearVariables(variables, variableCount);
                 }
             }
             clearWord(word, &wordSize);
