@@ -7,7 +7,8 @@
 #include "structs.h"
 #include "generalFunctions.h"
 
-void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap, int *lineNumber);
+void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap,
+               int *lineNumber, char *file);
 
 void processTypedef(const char *input, int *i, int inputSize, int *lineNumber);
 

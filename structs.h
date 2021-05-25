@@ -7,7 +7,7 @@
  * Структура для переменной. Переменная имеет имя и состояние "инициализирована" / "неинициализирована"
  */
 typedef struct {
-    char value[WORDS];
+    char value[WORD_LENGTH];
     bool isInitialized;
     int line;
 } VARIABLE;
@@ -37,20 +37,21 @@ typedef enum {                           //Наши состояния
 
 // MAP
 typedef struct  {
-    char key[WORDS];
+    char key[WORD_LENGTH];
     int line;
     bool empty;
+    char fileName[WORD_LENGTH];
 } Map;
 
 void initElements(Map *m);
 
-void insertElement(Map *m, char *key, int lineNumber, bool isFoo);
+void insertElement(Map *m, char *key, int lineNumber, bool isFoo, char *file);
 
 void checkElement(Map *m, char *key);
 
-void printFooMap(Map *m);
+void printFooMap(Map *m, char *fileName);
 
-void printVarMap(Map *m);
+void printVarMap(Map *m, char *fileName);
 
 
 // STACK
@@ -60,7 +61,7 @@ struct Node {                            // Структура стека сос
 };
 
 typedef struct {                         // Структура слово - состояние. Обычный массив, в который заносятся слова
-    char stateName[WORDS];
+    char stateName[WORD_LENGTH];
     state value;
 } stateTypes;
 
@@ -85,7 +86,7 @@ typedef struct {
 
 // TREE
 struct TreeNode {
-    char value[WORDS];
+    char value[WORD_LENGTH];
     bool isRecursive;
     bool isUsed;
     bool isNeeded;

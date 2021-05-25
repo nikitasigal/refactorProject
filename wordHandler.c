@@ -76,7 +76,7 @@ bool isElse(char *input, int i) {
 }
 
 void wordHandler(char *input, int inputSize, char *output, int *outputSize, stateTypes *now, int nowSize) {
-    char word[WORDS] = {0};                                                    //Буфер для слова
+    char word[WORD_LENGTH] = {0};                                                    //Буфер для слова
     int wordSize = 0;                                                          //Длина слова в буфере
 
     struct Node *stateStack = NULL;                                            //Стек состояний

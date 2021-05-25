@@ -64,7 +64,7 @@ bool checkVariables(VARIABLE *variables, int variableCount) {
  * Проверяет одну строчку на наличие объявления переменных. Так же по пути определяет, инициализированы ли переменные
  */
 void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *variables, int *wordSize, int *i,
-                    int *variableCount, Map *functionsMap, Map *variablesMap, int *lineNumber) {
+                    int *variableCount, Map *functionsMap, Map *variablesMap, int *lineNumber, char *file) {
     while (input[*i] != ';') {
         universalSkip(input, i, inputSize, lineNumber);
 
@@ -85,7 +85,7 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         if (input[*i] == '(') {
             // Пушнем в мап функций. Функцию main не пушаем!!
             if (strcmp(word, "main") != 0)
-                insertElement(functionsMap, word, *lineNumber, true);
+                insertElement(functionsMap, word, *lineNumber, true, file);
 
             // Пропустим () функции
             int bracketSequence = 0;
@@ -117,7 +117,7 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
                 (*i)++;
 
         // Пушаем переменную в мап
-        insertElement(variablesMap, word, *lineNumber, false);
+        insertElement(variablesMap, word, *lineNumber, false, file);
 
         clearWord(word, wordSize);
         // Мы пришли либо к ',', либо к ';'
@@ -131,7 +131,7 @@ void processScanfs(const char *input, int *t, int inputSize, VARIABLE *variables
     // Дойдём до переменных в scanf
     (*t)++;
 
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     while (input[*t] != ')') {
@@ -220,8 +220,9 @@ void clearVariables(VARIABLE *variables, int variableCount) {
 /*
  * Проверка на инициализацию
  */
-void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap, int *lineNumber) {
-    char word[WORDS] = {0};
+void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap,
+               int *lineNumber, char *file) {
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     for (int i = 0; i < inputSize; ++i) {
@@ -261,7 +262,8 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
                     skipTypes(input, &i, inputSize, now, nowSize, lineNumber);
 
                     // Пока не ';', будем пытаться взять переменные
-                    checkFirstLine(input, inputSize, word, variables, &wordSize, &i, &variableCount, functionsMap, variablesMap, lineNumber);
+                    checkFirstLine(input, inputSize, word, variables, &wordSize, &i, &variableCount, functionsMap,
+                                   variablesMap, lineNumber, file);
 
                     // Возможно, у нас остались неинициализированные переменные (в массиве variables), проверим их
                     // Если все переменные инициализированы, то выходим
@@ -280,10 +282,13 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
                     printNotInitialized(variables, variableCount);
 
                     // Очищаем структуру VARIABLE. Из-за того что я не очищал, были баги
-                    clearVariables(variables, variableCount);
+                    //clearVariables(variables, variableCount);
                 }
             }
             clearWord(word, &wordSize);
         }
     }
+
+    // Обработали один файл. Обнулим (объединичим) количество номер строки
+    *lineNumber = 1;
 }

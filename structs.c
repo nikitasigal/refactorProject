@@ -49,13 +49,14 @@ void initElements(Map *m) {
 /*
  * Вносит элемент в мап
  */
-void insertElement(Map *m, char *key, int lineNumber, bool isFoo) {
+void insertElement(Map *m, char *key, int lineNumber, bool isFoo, char *file) {
     unsigned int id = hash(key);
 
     if (m[id].empty) {
         m[id].empty = 0;
-        strcpy(m[id].key, key);
         m[id].line = lineNumber;
+        strcpy(m[id].key, key);
+        strcpy(m[id].fileName, file);
         return;
     }
 
@@ -119,27 +120,27 @@ void sortMap(Map *m) {
 /*
  * Выводим мап функций
  */
-void printFooMap(Map *m) {
+void printFooMap(Map *m, char *fileName) {
+    printf("\nUnused functions:\n");
     sortMap(m);
     for (int id = 0; id < MAP_SIZE; ++id)
-        if (!m[id].empty)
-            printf("Line %d: function '%s' is never used\n", m[id].line, m[id].key);
+        if (!m[id].empty && !strcmp(m[id].fileName, fileName))
+            printf("Line %d: function '%s' is never used\n",  m[id].line, m[id].key);
 }
 
 /*
  * Выводим мап переменных
  */
-void printVarMap(Map *m) {
+void printVarMap(Map *m, char *fileName) {
+    printf("\nUnused variables:\n");
     sortMap(m);
     for (int id = 0; id < MAP_SIZE; ++id)
-        if (!m[id].empty)
+        if (!m[id].empty && !strcmp(m[id].fileName, fileName))
             printf("Line %d: variable '%s' is never used\n", m[id].line, m[id].key);
 }
 
 
 void pushTree(Forest **forest, struct TreeNode *tree) {
-    /*if ((*forest)->trees == NULL)
-        (*forest)->trees->next = NULL;*/
     struct StackTreeNode *temp = (struct StackTreeNode *) malloc(sizeof(struct StackTreeNode));
     temp->tree = tree;
     temp->next = (*forest)->trees;

@@ -3,9 +3,10 @@
 /*
  * Аргументы функций до сего момента игнорировались. Пора это исправить и взять их под опеку
  */
-void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, int *lineNumber) {
+void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, int *lineNumber,
+                  char *file) {
     // Сюда собираем текущее слово
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     // Сейчас мы на (, пропустим её
@@ -23,7 +24,7 @@ void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSi
         }
 
         // Добавляем её в мап
-        insertElement(variablesMap, word, *lineNumber, false);
+        insertElement(variablesMap, word, *lineNumber, false, file);
 
         clearWord(word, &wordSize);
     }
@@ -32,9 +33,10 @@ void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSi
 /*
  * Проверка на неиспользованные переменные и функции
  */
-void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap, int *lineNumber) {
+void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap,
+                 int *lineNumber, char *file) {
     // Сюда собираем текущее слово
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     for (int i = 0; i < inputSize; ++i) {
@@ -75,7 +77,7 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
 
                     // Если мы встретили (, то это функция. Возьмём её аргументы (так как у нас нет их в мапах)
                     if (strlen(word) != 0 && input[i] == '(')
-                        getArguments(input, &i, inputSize, now, nowSize, variablesMap, lineNumber);
+                        getArguments(input, &i, inputSize, now, nowSize, variablesMap, lineNumber, file);
 
                     wasInitialization = true;
                 }
@@ -90,7 +92,4 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
             clearWord(word, &wordSize);
         }
     }
-
-    printFooMap(functionsMap);
-    printVarMap(variablesMap);
 }

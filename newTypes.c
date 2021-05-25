@@ -95,7 +95,7 @@ void skipSpecialWords(const char *input, int inputSize, int *j, stateTypes *now,
  * В ином случае, нам надо пропустить все типы данных (long long int и подобное) и взять имя
  */
 void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize) {
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     int lineNumber = 1;
@@ -169,7 +169,7 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                 // Берём слово и пушаем его как новый тип данных
                 pushNewType(now, nowSize, input, word, &wordSize, &j);
             }
-
+            clearWord(word, &wordSize);
         }
     }
 }

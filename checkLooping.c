@@ -65,7 +65,7 @@ void skipComments_2(const char *input, int inputSize, int *i, int *lineNumber) {
 
 typedef struct{
     int lineNum;
-    char variableNames [WORDS][NAME_SIZE];
+    char variableNames [WORD_LENGTH][NAME_SIZE];
     int variableNamesSize;
     bool Looped;
 } whileStats;
@@ -77,7 +77,7 @@ typedef struct{
 
 void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
                                                char functions[][NAME_SIZE], int *functionsSize){
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     int lineNumber = 1;
@@ -100,7 +100,7 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
 
             if (!strcmp(word, "while")){
                 bool infiniteCondition = false;
-                char condition[WORDS] = { 0 };
+                char condition[WORD_LENGTH] = {0 };
                 bool exclamationNum = false;
                 int conditionSize = 0;
                 int bracketSequence = 0;
@@ -260,12 +260,10 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
         }
     }
 
-    printf("Possible looping\n");
+    printf("\nPossible looping\n");
 
     for (int i = 0; i < searchSize; i++){
         if (search[i].Looped)
         printf("Line %d: possible infinity\n", search[i].lineNum);
     }
-
-    printf("\n");
 }

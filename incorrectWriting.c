@@ -3,7 +3,7 @@
 #include "newTypes.h"
 
 typedef struct {                         // Структура слово - состояние. Обычный массив, в который заносятся слова
-    char stateName[WORDS];
+    char stateName[WORD_LENGTH];
     state value;
     int line;
 } wrongNameFull;
@@ -27,7 +27,7 @@ int isAlreadyInside(wrongNameFull *arr, int arrSize, char *name){
  */
 void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
                                                                                                   char functions[][NAME_SIZE], int *functionsSize) {
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     wrongNameFull sucks[WORDS_FOR_STATE_NUM]; //Массив переменных и функций, который сосут = написаны не по стилю
@@ -196,7 +196,7 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                     }
                     break;
                 } else if (!strcmp(word, "typedef")){
-                    char name[WORDS] = { 0 };
+                    char name[WORD_LENGTH] = { 0 };
                     int nameSize = 0;
 
                     while (input[i] != ';' && input[i] != '{') {
@@ -277,7 +277,7 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
         }
     }
 
-    printf("Incorrectly named\n");
+    printf("\nIncorrectly named:\n");
 
     for (int i = 0; i < sucksSize; i++){
         if (sucks[i].value == INIT){
@@ -296,6 +296,4 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
             printf("Line %d: The data type '%s' is named wrong\n", sucks[i].line, sucks[i].stateName);
         }
     }
-
-    printf("\n");
 }

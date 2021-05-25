@@ -199,7 +199,7 @@ addNode(struct TreeNode *tree, struct TreeNode *curNode, struct TreeNode *nodePa
  */
 void
 getInit(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize) {
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     for (int i = 0; i < inputSize; ++i) {
@@ -239,11 +239,11 @@ getInit(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize
  */
 void
 getUsed(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize) {
-    char word[WORDS] = {0};
+    char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
     // Функция, в которой мы находимся в данный момент
-    char currentFoo[WORDS] = {0};
+    char currentFoo[WORD_LENGTH] = {0};
 
     int bracketSequence = 0;
 
