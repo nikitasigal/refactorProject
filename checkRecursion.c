@@ -1,4 +1,5 @@
 #include "checkRecursion.h"
+#include "fileHandling.h"
 
 Chain tempChain;
 ChainArray chains;
@@ -41,11 +42,11 @@ void fillChainsArray() {
  * Выводит рекурсивные цепочки
  */
 void printChains() {
+    printf("\nRecursion chains:\n");
     for (int i = 0; i < chains.size; ++i) {
-        printf("Recursion chain: ");
-        for (int j = chains.value[i].size - 1; j >= 0; --j) {
-            printf("%s - ", chains.value[i].value[j]);
-        }
+        printf("%d) ", i + 1);
+        for (int j = chains.value[i].size - 1; j >= 0; --j)
+            printf("%s -> ", chains.value[i].value[j]);
         printf("%s\n", chains.value[i].value[chains.value[i].size - 1]);
     }
 }
@@ -302,6 +303,10 @@ getUsed(Forest *forest, char *input, int inputSize, stateTypes *now, int nowSize
                     struct StackTreeNode *currentFooTree = forest->trees;
                     for (int k = 0; k < forest->size; ++k) {
                         if (!strcmp(currentFoo, currentFooTree->tree->value)) {
+                            int t = i;
+                            universalSkip(input, &t, inputSize, NULL);
+                            if (input[t] != '(')
+                                break;
                             // Добавляем в найденное дерево дитя
                             addNode(currentFooTree->tree, currentFooTree->tree, NULL, foundWordTree->tree->value,
                                     currentFooTree->tree->value, forest);
@@ -352,14 +357,25 @@ void buildTree(Forest *forest, struct TreeNode *curTree, struct TreeNode *child)
 /*
  * Проверка на рекурсию
  */
-void checkRecursion(char *input, int inputSize, stateTypes *now, int nowSize) {
+void checkRecursion(stateTypes *now, int nowSize, char files[][260], int fileCount) {
     // Лес. Корни каждого дерева - функция, которая инициализировалась пользователем
     Forest *forest = (Forest *) malloc(sizeof(Forest));
     forest->size = 0;
     forest->trees = NULL;
 
-    getInit(forest, input, inputSize, now, nowSize);
-    getUsed(forest, input, inputSize, now, nowSize);
+    // Переменные для файлов
+    char input[TEXT_SIZE] = {0};
+    int inputSize = 0;
+
+    for (int i = 0; i < fileCount; ++i) {
+        readFile(input, &inputSize, OUTPUT_DIRECTORY, files[i]);
+        getInit(forest, input, inputSize, now, nowSize);
+    }
+
+    for (int i = 0; i < fileCount; ++i) {
+        readFile(input, &inputSize, OUTPUT_DIRECTORY, files[i]);
+        getUsed(forest, input, inputSize, now, nowSize);
+    }
 
     struct StackTreeNode *tempTree = forest->trees;
     while (tempTree != NULL) {

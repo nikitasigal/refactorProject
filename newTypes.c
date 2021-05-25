@@ -120,8 +120,6 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                 pushNewType(now, nowSize, input, word, &wordSize, &i);
             }
 
-            // TODO Вообще, можно объединить эти два ифа
-
             if (!strcmp(word, "typedef")) {
                 // typedef может сопровождаться { }, а может и нет. Здесь мы создаём временную переменную j, чтобы
                 // вручную проверить, ГДЕ находится имя нового типа, и добавить его

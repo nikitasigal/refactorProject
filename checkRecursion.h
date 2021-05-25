@@ -4,6 +4,6 @@
 #include "structs.h"
 #include "generalFunctions.h"
 
-void checkRecursion(char *input, int inputSize, stateTypes *now, int nowSize);
+void checkRecursion(stateTypes *now, int nowSize, char files[][260], int fileCount);
 
 #endif //REFACTORPROJECT_CHECKRECURSION_H

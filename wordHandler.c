@@ -75,7 +75,9 @@ bool isElse(char *input, int i) {
     return false;
 }
 
-void wordHandler(char *input, int inputSize, char *output, int *outputSize, stateTypes *now, int nowSize) {
+void
+wordHandler(char *input, int inputSize, char *output, int *outputSize, stateTypes *now, int nowSize, int *nestingArray,
+            int *nestingSize) {
     char word[WORD_LENGTH] = {0};                                                    //Буфер для слова
     int wordSize = 0;                                                          //Длина слова в буфере
 
@@ -439,4 +441,7 @@ void wordHandler(char *input, int inputSize, char *output, int *outputSize, stat
                 break;
         }
     }
+
+    // Запоминаем nesting
+    nestingArray[(*nestingSize)++] = nestResult;
 }

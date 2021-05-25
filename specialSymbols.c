@@ -92,7 +92,7 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
                 if (!strncmp(doubleSymbols[j], input + i, 2))
                     isDouble = true;
             if (isDouble) {
-                if (!isPrevSpace)
+                if (output[*outputSize - 1] != ' ')
                     sprintf(output + (*outputSize)++, " ");
                 sprintf(output + *outputSize, "%c%c ", input[i], input[i + 1]);
                 *outputSize += 3;
