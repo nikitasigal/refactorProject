@@ -6,6 +6,7 @@
 #include "unusedTokens.h"
 #include "checkRecursion.h"
 #include "checkLooping.h"
+#include "incorrectWriting.h"
 
 void swapTexts(char *sourceText, int *sourceSize, char *outputText, int *outputSize) {
     strcpy(sourceText, outputText);
@@ -71,8 +72,7 @@ int main() {
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
     // Step 2 - custom data types and checking for the correctness of variables and functions TODO many files
-    newTypes(now, &nowSize, initialSize, sourceText, sourceSize, variables, &variablesSize,
-                                                                 functions, &functionsSize);
+    newTypes(now, &nowSize, initialSize, sourceText, sourceSize);
 
     // Step 3 - formatting
     wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize);
@@ -80,6 +80,9 @@ int main() {
     // Step 3.1 - exchange texts and finalize size of output text (outputSize = sourceSize)
     swapTexts(sourceText, &sourceSize, outputText, &outputSize);
     outputSize = sourceSize;
+
+    incorrectWriting(now, &nowSize, initialSize, sourceText, sourceSize, variables, &variablesSize,
+                     functions, &functionsSize);
 
     // Step 4 - checking for initialization of variables TODO many files
     checkInit(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);

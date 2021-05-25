@@ -1,5 +1,8 @@
 #include "checkRecursion.h"
 
+Chain tempChain;
+ChainArray chains;
+
 /*
  * Заполняет массив рекурсивных цепочек. Проверяет, была ли данная цепочка в массиве. Если нет - добавляет
  */

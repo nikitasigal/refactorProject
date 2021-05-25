@@ -260,8 +260,12 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
         }
     }
 
+    printf("Possible looping\n");
+
     for (int i = 0; i < searchSize; i++){
         if (search[i].Looped)
         printf("Line %d: possible infinity\n", search[i].lineNum);
     }
+
+    printf("\n");
 }

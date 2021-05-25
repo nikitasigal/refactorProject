@@ -1,10 +1,13 @@
 #include "newTypes.h"
 
 // skip версии 2.0. Скипает пробелы, \n, \t и комментарии, не печатая их
-void skip2(const char *input, int *i, int inputSize) {
+void skip2(const char *input, int *i, int inputSize, int *lineNumber) {
     while (*i < inputSize) {
         // Пропускаем пробелы, \n, \t
         if (input[*i] == ' ' || input[*i] == '\n' || input[*i] == '\t') {
+            if (input[*i] == '\n'){
+                (*lineNumber)++;
+            }
             (*i)++;
             continue;
         }
@@ -14,10 +17,18 @@ void skip2(const char *input, int *i, int inputSize) {
             if (input[*i + 1] == '/') {
                 while (input[*i] != '\n')
                     (*i)++;
+                if (input[*i] == '\n'){
+                    (*lineNumber)++;
+                }
+                (*i)++;
                 continue;
             } else if (input[*i + 1] == '*') {
-                while (input[*i] != '*' || input[*i + 1] != '/')
+                while (input[*i] != '*' || input[*i + 1] != '/') {
+                    if (input[*i] == '\n'){
+                        (*lineNumber)++;
+                    }
                     (*i)++;
+                }
                 *i += 2;
                 continue;
             }
@@ -27,6 +38,10 @@ void skip2(const char *input, int *i, int inputSize) {
         if (input[*i] == '#')
             while (input[*i] != '\n')
                 (*i)++;
+        if (input[*i] == '\n'){
+            (*lineNumber)++;
+            (*i)++;
+        }
         break;
     }
     /*if (isalnum(input[*i]) || input[*i] == '_')
@@ -60,12 +75,13 @@ void pushNewType(stateTypes *now, int *nowSize, const char *input, char *word, i
 }
 
 void skipSpecialWords(const char *input, int inputSize, int *j, stateTypes *now, int nowSize) {
+    int ln = 1;
     for (int k = 0; k < nowSize; ++k) {
         if (!strncmp(&input[(*j)], now[k].stateName, strlen(now[k].stateName)) &&
             (now[k].value == STRUCT || now[k].value == INIT)) {
             (*j) += (int) strlen(now[k].stateName);
             k = -1;
-            skip2(input, j, inputSize);
+            skip2(input, j, inputSize, &ln);
         }
     }
 }
@@ -78,19 +94,17 @@ void skipSpecialWords(const char *input, int inputSize, int *j, stateTypes *now,
  * и взять имя.
  * В ином случае, нам надо пропустить все типы данных (long long int и подобное) и взять имя
  */
-void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
-                                                                                          char functions[][NAME_SIZE], int *functionsSize) {
+void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize) {
     char word[WORDS] = {0};
     int wordSize = 0;
 
-    stateTypes sucks[WORDS_FOR_STATE_NUM]; //Массив переменных и функций, который сосут = написаны не по стилю
-    int sucksSize = 0;                     //Размер этого массива
+    int lineNumber = 1;
 
     for (int i = 0; i < inputSize; ++i) {
         if (isalnum(input[i]) || input[i] == '_') {
             word[wordSize++] = input[i];
         } else {
-            skip2(input, &i, inputSize);
+            skip2(input, &i, inputSize, &lineNumber);
 
             if (isalnum(input[i]) || input[i] == '_')
                 (i)--;
@@ -99,13 +113,12 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
             if (strlen(word) == 0)
                 continue;
 
-
             //Немного изменю вот это
-            /*if (!strcmp(word, "struct") || !strcmp(word, "enum")) {
+            if (!strcmp(word, "struct") || !strcmp(word, "enum")) {
                 // Берём слово и пушаем его как новый тип данных
-                skip2(input, &i, inputSize);
+                skip2(input, &i, inputSize, &lineNumber);
                 pushNewType(now, nowSize, input, word, &wordSize, &i);
-            }*/
+            }
 
             // TODO Вообще, можно объединить эти два ифа
 
@@ -113,7 +126,7 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                 // typedef может сопровождаться { }, а может и нет. Здесь мы создаём временную переменную j, чтобы
                 // вручную проверить, ГДЕ находится имя нового типа, и добавить его
                 int j = i;
-                skip2(input, &j, inputSize);
+                skip2(input, &j, inputSize, &lineNumber);
 
                 // struct и enum могут сопровождаться именами даже при typedef, например:
                 /*
@@ -129,19 +142,19 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                 if (!strncmp(&input[j], "struct", 6 * sizeof(char))) {
                     j += 6;
                     isStructOrEnum = true;
-                    skip2(input, &j, inputSize);
+                    skip2(input, &j, inputSize, &lineNumber);
                 }
                 if (!strncmp(&input[j], "enum", 4 * sizeof(char))) {
                     j += 4;
                     isStructOrEnum = true;
-                    skip2(input, &j, inputSize);
+                    skip2(input, &j, inputSize, &lineNumber);
                 }
 
                 // Скипаем слово после struct / enum (то есть имя структуры по сути), которое потом захватит другой if("struct") выше
                 while (isStructOrEnum && (isalnum(input[j]) || input[j] == '_'))
                     j++;
 
-                skip2(input, &j, inputSize);
+                skip2(input, &j, inputSize, &lineNumber);
 
                 // Скипаем все типы данных, которые хотим пропустить
                 skipSpecialWords(input, inputSize, &j, now, *nowSize);
@@ -150,141 +163,13 @@ void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int i
                 if (input[j] == '{') {
                     while (input[j - 1] != '}')
                         ++j;
-                    skip2(input, &j, inputSize);
+                    skip2(input, &j, inputSize, &lineNumber);
                 }
 
                 // Берём слово и пушаем его как новый тип данных
                 pushNewType(now, nowSize, input, word, &wordSize, &j);
             }
 
-            //Дальше идёт проверка на правописание переменных\функций - Обращаться к Размику
-            for (int l = 0; l < *nowSize; l++) {
-                if (!strcmp(word, now[l].stateName) && (now[l].value == INIT || now[l].value == STRUCT)) {
-                    //Смотрим встретили мы объявление, неважно какую, главное не typedef, коз он не объявляет переменные
-                    int j;                  //Переменная, помогающая бегать
-                    bool multi = false;     //Для объявления переменных через запятую
-
-                    //В случае struct и enum делаем то же, что и в прошлом коммите
-                    if (!strcmp(word, "struct") || !strcmp(word, "enum")) {
-                        // Берём слово и пушаем его как новый тип данных
-                        skip2(input, &i, inputSize);
-                        pushNewType(now, nowSize, input, word, &wordSize, &i);
-                        skip2(input, &i, inputSize);
-
-                    }
-
-                    //Для продолжения анализа
-                    j = i;
-
-                    //Если у нас был enum или struct, объявление будет после }, поэтому и идём до него
-                    if (input[j] == '{' && now[l].value == STRUCT) {
-                        while (input[j] != '}')
-                            j++;
-                        j++;
-                    }
-
-                    //Пропускаем всё лишнее и начинаем собирать имя нашей переменной
-                    clearWord(word, &wordSize);
-                    skip2(input, &j, inputSize);
-
-                    //Пока была запятая, продолжаем
-                    while (!multi) {
-
-                        //Пропускаем ненужное после запятой
-                        skip2(input, &j, inputSize);
-
-                        //Формирование слова
-                        readWord(input, word, &wordSize, &j);
-
-                        //Пропускаем ненужное до следующего символа
-                        skip2(input, &j, inputSize);
-
-                        //Если это (, то мы объявили функцию
-                        if (input[j] == '(') {
-                            //Проверяем подходит ли под PascalStyle
-                            //Нет - закидываем в список сосущих с состоянием FUNC
-                            if ((word[0] < 'A' || word[0] > 'Z') && strlen(word) != 0) {
-                                strcpy(sucks[sucksSize].stateName, word);
-                                sucks[sucksSize].value = FUNC;
-                                (sucksSize)++;
-                            }
-
-                            bool exists = false;
-
-                            for (int k = 0; k < (*functionsSize); k++){
-                                if (!strcmp(functions[k], word)){
-                                    exists = true;
-                                    break;
-                                }
-                            }
-
-                            if (!exists){
-                                strcpy(functions[(*functionsSize)++], word);
-                            }
-
-                            multi = true;
-                            continue;
-                            //Что-либо иное, просто переменная
-                        } else {
-
-                            if ((word[0] < 'a' || word[0] > 'z') &&
-                                l < initialSize && now[l].value != STRUCT &&
-                                strlen(word) != 0) {
-
-                                strcpy(sucks[sucksSize].stateName, word);
-                                sucks[sucksSize].value = INIT;
-                                (sucksSize)++;
-
-                            } else if ((word[0] < 'A' || word[0] > 'Z') &&
-                                       (l >= initialSize || now[l].value == STRUCT) &&
-                                       strlen(word) != 0) {
-
-                                strcpy(sucks[sucksSize].stateName, word);
-                                sucks[sucksSize].value = INIT;
-                                (sucksSize)++;
-
-                            }
-
-                            bool exists = false;
-
-                            for (int k = 0; k < (*variablesSize); k++){
-                                if (!strcmp(variables[k], word)){
-                                    exists = true;
-                                    break;
-                                }
-                            }
-
-                            if (!exists){
-                                strcpy(variables[(*variablesSize)], word);
-                                (*variablesSize)++;
-                            }
-                        }
-                        //Проверяем есть ли запятая
-                        //Нет - заканчиваем
-                        if (input[j] != ',') {
-                            multi = true;
-                            //Да - продолжаем проверять объявленные переменные
-                        } else {
-                            j++;
-                            clearWord(word, &wordSize);
-                        }
-                    }
-                    break;
-                }
-            }
-            clearWord(word, &wordSize);
-        }
-    }
-
-    for (int i = 0; i < sucksSize; i++){
-        if (sucks[i].value == INIT){
-            printf("The variable '%s' is named wrong\n", sucks[i].stateName);
-        }
-    }
-
-    for (int i = 0; i < sucksSize; i++){
-        if (sucks[i].value == FUNC){
-            printf("The function '%s' is named wrong\n", sucks[i].stateName);
         }
     }
 }

@@ -82,9 +82,6 @@ typedef struct {
     int size;
 } ChainArray;
 
-Chain tempChain;
-ChainArray chains;
-
 
 // TREE
 struct TreeNode {
