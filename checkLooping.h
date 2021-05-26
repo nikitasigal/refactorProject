@@ -5,7 +5,6 @@
 #include "structs.h"
 #include "generalFunctions.h"
 
-void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
-                                               char functions[][NAME_SIZE], int *functionsSize);
+void checkLooping(char *input, int inputSize, char variables[][20], const int *variablesSize);
 
 #endif //REFACTORPROJECT_CHECKLOOPING_H

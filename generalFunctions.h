@@ -2,6 +2,7 @@
 #define REFACTORPROJECT_GENERALFUNCTIONS_H
 
 #include "definitions.h"
+
 // Очистка слова
 void clearWord(char *word, int *wordSize);
 

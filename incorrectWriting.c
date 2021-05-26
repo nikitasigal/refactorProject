@@ -1,20 +1,10 @@
-#include "incorrectWriting.h"
-#include "definitions.h"
 #include "newTypes.h"
 
-typedef struct {                         // Структура слово - состояние. Обычный массив, в который заносятся слова
-    char stateName[WORD_LENGTH];
-    state value;
-    int line;
-} wrongNameFull;
-
-int isAlreadyInside(wrongNameFull *arr, int arrSize, char *name){
-    for (int i = 0; i < arrSize; i++){
-        if (!strcmp(name, arr[i].stateName)){
-            return 1;
-        }
-    }
-    return 0;
+int isAlreadyInside(wrongNameFull *arr, int arrSize, char *name) {
+    for (int i = 0; i < arrSize; i++)
+        if (!strcmp(name, arr[i].stateName))
+            return true;
+    return false;
 }
 
 /*
@@ -25,13 +15,14 @@ int isAlreadyInside(wrongNameFull *arr, int arrSize, char *name){
  * и взять имя.
  * В ином случае, нам надо пропустить все типы данных (long long int и подобное) и взять имя
  */
-void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
-                                                                                                  char functions[][NAME_SIZE], int *functionsSize) {
+void
+incorrectWriting(stateTypes *now, const int *nowSize, char *input, int inputSize, char variables[][NAME_SIZE],
+                 int *variablesSize, char functions[][NAME_SIZE], int *functionsSize) {
     char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
-    wrongNameFull sucks[WORDS_FOR_STATE_NUM]; //Массив переменных и функций, который сосут = написаны не по стилю
-    int sucksSize = 0;                     //Размер этого массива
+    wrongNameFull sucks[WORDS_FOR_STATE_NUM];   //Массив переменных и функций, который сосут = написаны не по стилю
+    int sucksSize = 0;                          //Размер этого массива
 
     int lineNumber = 1;
 
@@ -63,8 +54,8 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                         // Берём слово и пушаем его как новый тип данных
                         skip2(input, &i, inputSize, &lineNumber);
                         clearWord(word, &wordSize);
-                        if (isalnum(input[i]) || input[i] == '_'){
-                            while(isalnum(input[i]) || input[i] == '_'){
+                        if (isalnum(input[i]) || input[i] == '_') {
+                            while (isalnum(input[i]) || input[i] == '_') {
                                 word[wordSize++] = input[i++];
                             }
                         }
@@ -115,7 +106,7 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                         //Формирование слова
                         readWord(input, word, &wordSize, &j);
 
-                        for (int k = 0; k < *nowSize; k++){
+                        for (int k = 0; k < *nowSize; k++) {
                             if (!strcmp(word, now[k].stateName)) {
                                 inFunc = true;
                                 break;
@@ -143,14 +134,14 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
 
                             bool exists = false;
 
-                            for (int k = 0; k < (*functionsSize); k++){
-                                if (!strcmp(functions[k], word)){
+                            for (int k = 0; k < (*functionsSize); k++) {
+                                if (!strcmp(functions[k], word)) {
                                     exists = true;
                                     break;
                                 }
                             }
 
-                            if (!exists){
+                            if (!exists) {
                                 strcpy(functions[(*functionsSize)++], word);
                             }
 
@@ -160,7 +151,6 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                         } else {
 
                             if ((word[0] < 'a' || word[0] > 'z') &&
-                                /*l < initialSize && now[l].value != STRUCT && */
                                 strlen(word) != 0) {
 
                                 if (!isAlreadyInside(sucks, sucksSize, word)) {
@@ -170,27 +160,18 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                                     (sucksSize)++;
                                 }
 
-                            }/* else if ((word[0] < 'A' || word[0] > 'Z') &&
-                                       (l >= initialSize || now[l].value == STRUCT) &&
-                                       strlen(word) != 0) {
-
-                                strcpy(sucks[sucksSize].stateName, word);
-                                sucks[sucksSize].value = INIT;
-                                sucks[sucksSize].line = newLineNumber;
-                                (sucksSize)++;
-
-                            }*/
+                            }
 
                             bool exists = false;
 
-                            for (int k = 0; k < (*variablesSize); k++){
-                                if (!strcmp(variables[k], word)){
+                            for (int k = 0; k < (*variablesSize); k++) {
+                                if (!strcmp(variables[k], word)) {
                                     exists = true;
                                     break;
                                 }
                             }
 
-                            if (!exists){
+                            if (!exists) {
                                 strcpy(variables[(*variablesSize)], word);
                                 (*variablesSize)++;
                             }
@@ -206,8 +187,8 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                         }
                     }
                     break;
-                } else if (!strcmp(word, "typedef")){
-                    char name[WORD_LENGTH] = { 0 };
+                } else if (!strcmp(word, "typedef")) {
+                    char name[WORD_LENGTH] = {0};
                     int nameSize = 0;
 
                     while (input[i] != ';' && input[i] != '{') {
@@ -227,9 +208,8 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
 
                     skip2(input, &i, inputSize, &lineNumber);
 
-                    if (input[i] == ';'){
+                    if (input[i] == ';') {
                         if ((name[0] < 'A' || name[0] > 'Z') &&
-                            /*(l >= initialSize || now[l].value == STRUCT) &&*/
                             strlen(name) != 0) {
 
                             strcpy(sucks[sucksSize].stateName, name);
@@ -267,7 +247,6 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                         }
 
                         if ((name[0] < 'A' || name[0] > 'Z') &&
-                            /*(l >= initialSize || now[l].value == STRUCT) &&*/
                             strlen(name) != 0) {
 
                             if (!isAlreadyInside(sucks, sucksSize, word)) {
@@ -290,21 +269,15 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
 
     printf("\nIncorrectly named:\n");
 
-    for (int i = 0; i < sucksSize; i++){
-        if (sucks[i].value == INIT){
+    for (int i = 0; i < sucksSize; i++)
+        if (sucks[i].value == INIT)
             printf("Line %d: The variable '%s' is named wrong\n", sucks[i].line, sucks[i].stateName);
-        }
-    }
 
-    for (int i = 0; i < sucksSize; i++){
-        if (sucks[i].value == FUNC){
+    for (int i = 0; i < sucksSize; i++)
+        if (sucks[i].value == FUNC)
             printf("Line %d: The function '%s' is named wrong\n", sucks[i].line, sucks[i].stateName);
-        }
-    }
 
-    for (int i = 0; i < sucksSize; i++){
-        if (sucks[i].value == TYPEDEF){
+    for (int i = 0; i < sucksSize; i++)
+        if (sucks[i].value == TYPEDEF)
             printf("Line %d: The data type '%s' is named wrong\n", sucks[i].line, sucks[i].stateName);
-        }
-    }
 }

@@ -5,7 +5,8 @@
 #include "structs.h"
 #include "generalFunctions.h"
 
-void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
-              char functions[][NAME_SIZE], int *functionsSize);
+void
+incorrectWriting(stateTypes *now, const int *nowSize, char *input, int inputSize, char variables[][NAME_SIZE],
+                 int *variablesSize, char functions[][NAME_SIZE], int *functionsSize);
 
 #endif //REFACTORPROJECT_INCORRECTWRITING_H

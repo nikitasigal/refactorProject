@@ -1,8 +1,6 @@
 #include "checkLooping.h"
-#include "definitions.h"
 
 void skip3_2(const char *input, int *i, int inputSize, int *lineNumber) {
-
     while (*i < inputSize) {
         // Пропускаем пробелы, \n, \t
         if (input[*i] == ' ' || input[*i] == '\n' || input[*i] == '\t' || input[*i] == ',' || input[*i] == '*' ||
@@ -10,7 +8,6 @@ void skip3_2(const char *input, int *i, int inputSize, int *lineNumber) {
 
             if (lineNumber != NULL && input[*i] == '\n')
                 (*lineNumber)++;
-
 
 
             (*i)++;
@@ -57,28 +54,20 @@ void skip3_2(const char *input, int *i, int inputSize, int *lineNumber) {
 }
 
 void skipComments_2(const char *input, int inputSize, int *i, int *lineNumber) {
-    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*' || input[*i] == '"' || input[*i] == '\'' || input[*i] == '*') {
+    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*' || input[*i] == '"' ||
+        input[*i] == '\'' || input[*i] == '*') {
         skip3_2(input, i, inputSize, lineNumber);
-        if (isalnum(input[*i]) || input[*i] == '_'){
+        if (isalnum(input[*i]) || input[*i] == '_')
             (*i)--;
-        }
     }
 }
-
-typedef struct{
-    int lineNum;
-    char variableNames [WORD_LENGTH][NAME_SIZE];
-    int variableNamesSize;
-    bool Looped;
-} whileStats;
 
 /* DISCLAIMER
  * Данный код является происками дьявола и не содержит в себе ни логического, ни духовного смысла.
  * Если он выдаёт неверный результат, обратитесь к Размику, он закинет вам ещё один костыль
 */
 
-void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int *variablesSize,
-                                               char functions[][NAME_SIZE], int *functionsSize){
+void checkLooping(char *input, int inputSize, char variables[][NAME_SIZE], const int *variablesSize) {
     char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 
@@ -91,7 +80,6 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
         if (isalnum(input[i]) || input[i] == '_') {
             word[wordSize++] = input[i];
         } else {
-
             if (input[i] == '\n')
                 lineNumber++;
 
@@ -100,9 +88,9 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
             if (strlen(word) == 0)
                 continue;
 
-            if (!strcmp(word, "while")){
+            if (!strcmp(word, "while")) {
                 bool infiniteCondition = false;
-                char condition[WORD_LENGTH] = {0 };
+                char condition[WORD_LENGTH] = {0};
                 bool exclamationNum = false;
                 int conditionSize = 0;
                 int bracketSequence = 0;
@@ -112,13 +100,11 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
 
                 search[searchSize].Looped = false;
 
-                while ((input[i-1] != ')') || (bracketSequence != 0)){
-
+                while ((input[i - 1] != ')') || (bracketSequence != 0)) {
                     skipComments_2(input, inputSize, &i, &lineNumber);
 
-                    if (input[i] == ' '){
+                    if (input[i] == ' ')
                         infiniteCondition = true;
-                    }
 
                     if (input[i] == '(')
                         bracketSequence++;
@@ -129,9 +115,8 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
                     if (isalnum(input[i]) || input[i] == '_') {
                         condition[conditionSize++] = input[i];
                     } else {
-                        if (input[i] == '!') {
+                        if (input[i] == '!')
                             exclamationNum = !exclamationNum;
-                        }
 
                         if (input[i] == '\n')
                             lineNumber++;
@@ -145,9 +130,8 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
                             }
                         }
 
-                        if (input[i] != ')') {
+                        if (input[i] != ')')
                             clearWord(condition, &conditionSize);
-                        }
                     }
                     i++;
                 }
@@ -159,41 +143,36 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
                     lineNumber++;
 
                 if (((!strcmp(condition, "false") && !exclamationNum) ||
-                     (!strcmp(condition, "0")     && !exclamationNum) ||
-                     (!strcmp(condition, "true")  && exclamationNum)  ||
-                     (!strcmp(condition, "1")     && exclamationNum)) &&
-                      !infiniteCondition)
+                     (!strcmp(condition, "0") && !exclamationNum) ||
+                     (!strcmp(condition, "true") && exclamationNum) ||
+                     (!strcmp(condition, "1") && exclamationNum)) &&
+                    !infiniteCondition)
                     infiniteCondition = true;
 
 
-                if (!infiniteCondition) {
-                    /*printf("Line %d: Possible infinty\n", lineNumber);*/
+                if (!infiniteCondition)
                     search[searchSize].Looped = true;
-                } /*else
-                    search[searchSize].Looped = false;*/
 
                 searchSize++;
 
-                if (input[i] == ' '){
+                if (input[i] == ' ')
                     i++;
-                }
 
                 skipComments_2(input, inputSize, &i, &lineNumber);
 
                 int j = i;
                 int newBracketSequence = 0;
 
-                if (input[j] == ' '){
+                if (input[j] == ' ')
                     j++;
-                }
 
                 skipComments_2(input, inputSize, &j, &lineNumber);
 
-                if (input[j] == '{'){
+                if (input[j] == '{') {
                     newBracketSequence++;
                     j++;
 
-                    while ((input[j-1] != '}') || (newBracketSequence != 0)){
+                    while ((input[j - 1] != '}') || (newBracketSequence != 0)) {
                         skipComments_2(input, inputSize, &i, &lineNumber);
 
                         if (input[j] == '{')
@@ -205,14 +184,12 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
                             condition[conditionSize++] = input[j];
                         } else {
 
-                            for (int k = 0; k < searchSize; k++){
-                                for (int l = 0; l < search[searchSize - 1].variableNamesSize; l++){
-                                    if (!strcmp(condition, search[searchSize - 1].variableNames[l])){
+                            for (int k = 0; k < searchSize; k++)
+                                for (int l = 0; l < search[searchSize - 1].variableNamesSize; l++)
+                                    if (!strcmp(condition, search[searchSize - 1].variableNames[l])) {
                                         search[searchSize - 1].Looped = false;
                                         break;
                                     }
-                                }
-                            }
 
                             if ((!(strcmp(condition, "break")))) {
                                 search[searchSize - 1].Looped = false;
@@ -221,12 +198,10 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
 
                             clearWord(condition, &conditionSize);
                         }
-                    j++;
+                        j++;
                     }
-                }
-                else {
-                    while (((input[j - 1] != ';') && (input[j - 1] != '}')) || (newBracketSequence != 0)){
-
+                } else {
+                    while (((input[j - 1] != ';') && (input[j - 1] != '}')) || (newBracketSequence != 0)) {
                         if (input[j] == '{')
                             newBracketSequence++;
                         else if (input[j] == '}')
@@ -235,10 +210,9 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
                         if (isalnum(input[j]) || input[j] == '_') {
                             condition[conditionSize++] = input[j];
                         } else {
-
-                            for (int k = 0; k < searchSize; k++){
-                                for (int l = 0; l < search[searchSize - 1].variableNamesSize; l++){
-                                    if (!strcmp(condition, search[searchSize - 1].variableNames[l])){
+                            for (int k = 0; k < searchSize; k++) {
+                                for (int l = 0; l < search[searchSize - 1].variableNamesSize; l++) {
+                                    if (!strcmp(condition, search[searchSize - 1].variableNames[l])) {
                                         search[searchSize - 1].Looped = false;
                                         break;
                                     }
@@ -257,15 +231,13 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
                 }
 
             }
-
             clearWord(word, &wordSize);
         }
     }
 
-    printf("\nPossible looping\n");
+    printf("\nPossible looping:\n");
 
-    for (int i = 0; i < searchSize; i++){
+    for (int i = 0; i < searchSize; i++)
         if (search[i].Looped)
-        printf("Line %d: possible infinity\n", search[i].lineNum);
-    }
+            printf("Line %d: possible infinity\n", search[i].lineNum);
 }

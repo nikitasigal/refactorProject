@@ -23,13 +23,13 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
             }
             if (input[i + 1] == '*') {
                 sprintf(output + (*outputSize), "//");
-                (*outputSize)+=2;
-                i+=2;
+                (*outputSize) += 2;
+                i += 2;
                 while (input[i] != '*' || input[i + 1] != '/') {
                     sprintf(output + (*outputSize)++, "%c", input[i]);
-                    if (input[i] == '\n'){
+                    if (input[i] == '\n') {
                         sprintf(output + (*outputSize), "//");
-                        (*outputSize)+=2;
+                        (*outputSize) += 2;
                     }
                     i++;
                 }
@@ -204,7 +204,6 @@ void processSpecialSymbols(char *input, int inputSize, char *output, int *output
             isPrevSpace = true;
             continue;
         }
-
 
 
         if (input[i] == ' ' || input[i] == '\n' || input[i] == '\t') {

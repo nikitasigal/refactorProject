@@ -111,8 +111,7 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         if (input[*i] != '=') {
             variables[*variableCount].line = *lineNumber;
             strcpy(variables[(*variableCount)++].value, word);
-        }
-        else
+        } else
             while (input[*i] != ',' && input[*i] != ';')
                 (*i)++;
 

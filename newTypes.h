@@ -5,7 +5,7 @@
 #include "structs.h"
 #include "generalFunctions.h"
 
-void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize);
+void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize);
 
 void skipSpecialWords(const char *input, int inputSize, int *j, stateTypes *now, int nowSize);
 

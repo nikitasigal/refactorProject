@@ -42,7 +42,7 @@ void fillChainsArray() {
  * Выводит рекурсивные цепочки
  */
 void printChains() {
-    printf("\nRecursion chains:\n");
+    printf("\n----------------------------\nRecursion chains:\n");
     for (int i = 0; i < chains.size; ++i) {
         printf("%d) ", i + 1);
         for (int j = chains.value[i].size - 1; j >= 0; --j)
@@ -355,9 +355,51 @@ void buildTree(Forest *forest, struct TreeNode *curTree, struct TreeNode *child)
 }
 
 /*
+ * Распечатывает дерево в виде каталога
+ */
+void printTree(struct TreeNode *curTree, int tabCount) {
+    tabCount++;
+    if (curTree == NULL)
+        return;
+    for (int i = 0; i < curTree->childCount; ++i) {
+        for (int j = 0; j < tabCount; ++j) {
+            printf("|");
+            printf("   ");
+        }
+
+        printf("%s", curTree->child[i]->value);
+        if (curTree->child[i]->isRecursive)
+            printf(" (recursive)");
+        printf("\n");
+        printTree(curTree->child[i], tabCount);
+    }
+}
+
+void printCallingTree(Forest *forest, struct StackTreeNode *tempTree) {
+    printf("\nCalling tree:");
+    tempTree = forest->trees;
+    // Поиск main
+    while (tempTree != NULL) {
+        if (!strcmp(tempTree->tree->value, "main")) {
+            // Достроим main
+            for (int i = 0; i < tempTree->tree->childCount; ++i) {
+                clearTree(tempTree->tree);
+                buildTree(forest, tempTree->tree, tempTree->tree->child[i]);
+            }
+            // Вывод
+            printf("\n%s\n", tempTree->tree->value);
+            int tabCount = 0;
+            printTree(tempTree->tree, tabCount);
+            break;
+        }
+        tempTree = tempTree->next;
+    }
+}
+
+/*
  * Проверка на рекурсию
  */
-void checkRecursion(stateTypes *now, int nowSize, char files[][260], int fileCount) {
+void checkRecursion(stateTypes *now, int nowSize, char files[][WORD_LENGTH], int fileCount) {
     // Лес. Корни каждого дерева - функция, которая инициализировалась пользователем
     Forest *forest = (Forest *) malloc(sizeof(Forest));
     forest->size = 0;
@@ -367,16 +409,19 @@ void checkRecursion(stateTypes *now, int nowSize, char files[][260], int fileCou
     char input[TEXT_SIZE] = {0};
     int inputSize = 0;
 
+    // Поиск инициализаций функций во всех файлах
     for (int i = 0; i < fileCount; ++i) {
         readFile(input, &inputSize, OUTPUT_DIRECTORY, files[i]);
         getInit(forest, input, inputSize, now, nowSize);
     }
 
+    // Поиск функций, которые использовались в других функциях
     for (int i = 0; i < fileCount; ++i) {
         readFile(input, &inputSize, OUTPUT_DIRECTORY, files[i]);
         getUsed(forest, input, inputSize, now, nowSize);
     }
 
+    // Построение леса. Поиск рекурсивных цепочек
     struct StackTreeNode *tempTree = forest->trees;
     while (tempTree != NULL) {
         // Переберём все вершины из второго уровня дерева и достроим их, если они уже не использовались
@@ -388,6 +433,9 @@ void checkRecursion(stateTypes *now, int nowSize, char files[][260], int fileCou
         tempTree = tempTree->next;
     }
 
-    // Вывод
+    // Вывод цепочек
     printChains();
+
+    // Вывод дерева вызовов
+    printCallingTree(forest, tempTree);
 }

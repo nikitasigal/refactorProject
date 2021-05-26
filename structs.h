@@ -34,9 +34,16 @@ typedef enum {                           //Наши состояния
     FUNC
 } state;
 
+// WHILE_STATS
+typedef struct {
+    int lineNum;
+    char variableNames[WORD_COUNT][NAME_SIZE];
+    int variableNamesSize;
+    bool Looped;
+} whileStats;
 
 // MAP
-typedef struct  {
+typedef struct {
     char key[WORD_LENGTH];
     int line;
     bool empty;
@@ -85,6 +92,12 @@ typedef struct {
     Chain value[CHAIN_LENGTH];
     int size;
 } ChainArray;
+
+typedef struct {                         // Структура слово - состояние. Обычный массив, в который заносятся слова
+    char stateName[WORD_LENGTH];
+    state value;
+    int line;
+} wrongNameFull;
 
 
 // TREE

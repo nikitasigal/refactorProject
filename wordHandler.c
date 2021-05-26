@@ -1,7 +1,6 @@
 #include "wordHandler.h"
 
 void skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
-    //TODO !!! пропуск символа #, ибо в define и include происходит форматирование
     bool isSignificantSymbol = false;
     while (*i < inputSize && !isSignificantSymbol) {
         isSignificantSymbol = true;
@@ -12,8 +11,8 @@ void skip(char *input, char *output, int *i, int *outputSize, int inputSize) {
                 while (input[*i] != '\n')
                     sprintf(output + (*outputSize)++, "%c", input[(*i)++]);
                 continue;
-            } else if (input[*i + 1] == '*') {      //TODO есть идея по выравниванию табуляций на каждой строчке комментария. Можно перед /* посчитать кол-во табуляций (пробелов) и рисовать их вручную
-                while (input[*i] != '*' || input[*i + 1] != '/')    //TODO upd. CLion превращает \t в пробелы. По умолчанию \t = 4 пробела. Но мы не знаем, сколько на самом деле пользователь поставил, так что не пойдёт
+            } else if (input[*i + 1] == '*') {
+                while (input[*i] != '*' || input[*i + 1] != '/')
                     sprintf(output + (*outputSize)++, "%c", input[(*i)++]);
                 sprintf(output + *outputSize, "*/");
                 *outputSize += 2;
@@ -78,7 +77,7 @@ bool isElse(char *input, int i) {
 void
 wordHandler(char *input, int inputSize, char *output, int *outputSize, stateTypes *now, int nowSize, int *nestingArray,
             int *nestingSize) {
-    char word[WORD_LENGTH] = {0};                                                    //Буфер для слова
+    char word[WORD_LENGTH] = {0};                                              //Буфер для слова
     int wordSize = 0;                                                          //Длина слова в буфере
 
     struct Node *stateStack = NULL;                                            //Стек состояний
@@ -93,7 +92,7 @@ wordHandler(char *input, int inputSize, char *output, int *outputSize, stateType
 
     for (int i = 0; i < inputSize; ++i) {                                      //Наш цикл
         if (nesting(&stateStack) > nestResult) {                               // Проверяем сколько циклов у нас лежит в стеке состояний.
-            nestResult = nesting(&stateStack);                                 // TODO это неэффективно. Нам на КАЖДОМ символе надо бегать по стеку (причём два раза)
+            nestResult = nesting(&stateStack);
         }
 
         if (isalnum(input[i]) || input[i] == '_') {                            //Формирование слова
@@ -268,7 +267,7 @@ wordHandler(char *input, int inputSize, char *output, int *outputSize, stateType
                     }
                 }
                 break;                                                                    //Тут кончается INIT
-            case CASE: //TODO !!!!! Может быть дополнительно понадобится состояние switch. Каждый case должен уменьшать табуляцию. На примерах можно увидеть  //Правила для CASE
+            case CASE:
                 switch (input[i]) {
                     case ':': {                                                                  //Встретили ':'
                         tabsCount++;
@@ -338,7 +337,8 @@ wordHandler(char *input, int inputSize, char *output, int *outputSize, stateType
                             tabsCount--;
                         }
 
-                        if ((peek(&stateStack) == NOTHING || peek(&stateStack) == ELSE_BODY || peek(&stateStack) == FOR_BODY || peek(&stateStack) == IF_BODY) && input[i] == '}'){    // Закончился for или if или пустые скобки?
+                        if ((peek(&stateStack) == NOTHING || peek(&stateStack) == ELSE_BODY ||
+                            peek(&stateStack) == FOR_BODY || peek(&stateStack) == IF_BODY) && input[i] == '}') {    // Закончился for или if или пустые скобки?
                             pop(&stateStack);
                             (*outputSize)--;
                         }
@@ -352,9 +352,6 @@ wordHandler(char *input, int inputSize, char *output, int *outputSize, stateType
 
                         if (output[(*outputSize) - 2] == '}' && input[i] == ';')            //Для склейки '}' и ';', т.е. игнора прошлого \n
                             (*outputSize)--;                                                //Нужна адаптация, т.к. мб комментарий
-
-                        /*if (peek(&stateStack) == NOTHING && input[i] == '}')
-                            lastState = pop(&stateStack);*/
 
                         if (lastState == FOR && input[i] == '{')                             //Для загрузки FOR_BODY
                             push(&stateStack, FOR_BODY);

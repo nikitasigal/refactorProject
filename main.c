@@ -20,7 +20,6 @@ int main() {
 
     //now - Массив состояний + их отдельного слова. nowSize - изначальный размер массива (он увеличится, если будут новые типы данных)
     int nowSize = 19;
-    int initialSize = nowSize;
     stateTypes now[WORDS_FOR_STATE_NUM] = {{"while",   FOR},
                                            {"for",     FOR},
                                            {"switch",  IF},
@@ -54,6 +53,10 @@ int main() {
     initElements(functionsMap);
     initElements(variablesInitMap);
 
+    // Хранилище вложенности циклов
+    int nestingArray[WORD_COUNT];
+    int nestingSize = 0;
+
     // Переменная для определения номера строки в файле
     int lineNumber = 1;
 
@@ -64,32 +67,32 @@ int main() {
     // Запоминаем названия всех файлов
     readFileNames(files, &fileCount);
 
-    // Хранилище nesting'ов
-    int nestingArray[WORD_COUNT];
-    int nestingSize = 0;
-
-    // TODO исправить комментарии
-    // Форматируем все файлы и собираем новые типы данных STEP 1
+    // At the beginning, collect all new data types
     for (int i = 0; i < fileCount; ++i) {
         readFile(sourceText, &sourceSize, SOURCE_DIRECTORY, files[i]);
 
-        // Step 1 - special symbols
+        // Step 1 - memorizing new data types
+        newTypes(now, &nowSize, sourceText, sourceSize);
+    }
+
+    // Format all the files and collect new data types
+    for (int i = 0; i < fileCount; ++i) {
+        readFile(sourceText, &sourceSize, SOURCE_DIRECTORY, files[i]);
+
+        // Step 2 - special symbols
         processSpecialSymbols(sourceText, sourceSize, outputText, &outputSize);
 
-        // Step 1.1 - output <-> input
+        // Step 2.1 - output <-> input
         swapTexts(sourceText, &sourceSize, outputText, &outputSize);
 
-        // Step 2
-        newTypes(now, &nowSize, initialSize, sourceText, sourceSize);
-
-        // Step 3 - formatting
+        // Step 3 - formatting and checking for nesting loops
         wordHandler(sourceText, sourceSize, outputText, &outputSize, now, nowSize, nestingArray, &nestingSize);
 
         // Выводим файл в out
         outputFile(outputText, &outputSize, files[i]);
     }
 
-    // Соберём все инициализации переменных и функций во всех файлах STEP 2
+    // Collect almost all variable and function initializations in every file
     for (int i = 0; i < fileCount; ++i) {
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
@@ -98,8 +101,7 @@ int main() {
                   files[i]);
     }
 
-    // Дособираем инициализации переменных для мапа неиспользованных переменных и проверяем на использование переменные
-    // и функции STEP 3
+    // Finish collecting the remaining variables for map of unused variables and check for use of variables and functions
     for (int i = 0; i < fileCount; ++i) {
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
@@ -107,29 +109,29 @@ int main() {
         checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber, files[i]);
     }
 
-    // Проанализируем каждый файл STEP 4
+    // Analyse every file
     for (int i = 0; i < fileCount; ++i) {
         printf("----------------------------\nFile '%s':\n----------------------------\n", files[i]);
 
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
+        // Step 6 - output max nesting of loops
         printf("\nMaximum nesting of loops: %d\n", nestingArray[i]);
 
-        //Step 6 - checking variables/functions/data types if their names are wrong
-        incorrectWriting(now, &nowSize, initialSize, sourceText, sourceSize, variables, &variablesSize,
-                        functions, &functionsSize);
+        // Step 7 - checking variables/functions/data types if their names are wrong
+        incorrectWriting(now, &nowSize, sourceText, sourceSize, variables, &variablesSize,
+                         functions, &functionsSize);
 
-        // Step 7 - checking for endless loops
-        checkLooping(sourceText, sourceSize, variables, &variablesSize,
-                     functions, &functionsSize);
+        // Step 8 - checking for endless loops
+        checkLooping(sourceText, sourceSize, variables, &variablesSize);
 
-        // Выведем не инициализированные переменные и неиспользованные переменные и функции
+        // Output not initialized variables and unused variables and functions
         printVarInitMap(variablesInitMap, files[i]);
         printFooMap(functionsMap, files[i]);
         printVarMap(variablesMap, files[i]);
     }
 
-    // Выводим рекурсивные цепочки STEP 5
+    // Step 9-10 - revealing recursion chains and output tree of callings
     checkRecursion(now, nowSize, files, fileCount);
 
     return 0;

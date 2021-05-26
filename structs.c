@@ -139,7 +139,7 @@ void printFooMap(Map *m, char *fileName) {
     sortMap(m);
     for (int id = 0; id < MAP_SIZE; ++id)
         if (!m[id].empty && !strcmp(m[id].fileName, fileName))
-            printf("Line %d: function '%s' is never used\n",  m[id].line, m[id].key);
+            printf("Line %d: function '%s' is never used\n", m[id].line, m[id].key);
 }
 
 /*

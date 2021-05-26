@@ -5,29 +5,26 @@ void skip2(const char *input, int *i, int inputSize, int *lineNumber) {
     while (*i < inputSize) {
         // Пропускаем пробелы, \n, \t
         if (input[*i] == ' ' || input[*i] == '\n' || input[*i] == '\t' || input[*i] == '*') {
-            if (input[*i] == '\n'){
+            if (input[*i] == '\n')
                 (*lineNumber)++;
-            }
             (*i)++;
             continue;
         }
 
-        if (input[*i] == '"'){
+        if (input[*i] == '"') {
             (*i)++;
-            while (input[*i - 1] == '\\' || input[*i] != '"'){
-                if (input[*i] == '\n'){
+            while (input[*i - 1] == '\\' || input[*i] != '"') {
+                if (input[*i] == '\n')
                     (*lineNumber)++;
-                }
                 (*i)++;
             }
         }
 
-        if (input[*i] == '\''){
+        if (input[*i] == '\'') {
             (*i)++;
-            while ((input[*i - 1] == '\\' && input[*i - 2] != '\\') || input[*i] != '\''){
-                if (input[*i] == '\n'){
+            while ((input[*i - 1] == '\\' && input[*i - 2] != '\\') || input[*i] != '\'') {
+                if (input[*i] == '\n')
                     (*lineNumber)++;
-                }
                 (*i)++;
             }
         }
@@ -37,16 +34,14 @@ void skip2(const char *input, int *i, int inputSize, int *lineNumber) {
             if (input[*i + 1] == '/') {
                 while (input[*i] != '\n')
                     (*i)++;
-                if (input[*i] == '\n'){
+                if (input[*i] == '\n')
                     (*lineNumber)++;
-                }
                 (*i)++;
                 continue;
             } else if (input[*i + 1] == '*') {
                 while (input[*i] != '*' || input[*i + 1] != '/') {
-                    if (input[*i] == '\n'){
+                    if (input[*i] == '\n')
                         (*lineNumber)++;
-                    }
                     (*i)++;
                 }
                 *i += 2;
@@ -58,14 +53,12 @@ void skip2(const char *input, int *i, int inputSize, int *lineNumber) {
         if (input[*i] == '#')
             while (input[*i] != '\n')
                 (*i)++;
-        if (input[*i] == '\n'){
+        if (input[*i] == '\n') {
             (*lineNumber)++;
             (*i)++;
         }
         break;
     }
-    /*if (isalnum(input[*i]) || input[*i] == '_')
-        (*i)--;*/
 }
 
 // Пушает новый тип данных в массив stateTypes, очищая
@@ -114,7 +107,7 @@ void skipSpecialWords(const char *input, int inputSize, int *j, stateTypes *now,
  * и взять имя.
  * В ином случае, нам надо пропустить все типы данных (long long int и подобное) и взять имя
  */
-void newTypes(stateTypes *now, int *nowSize, int initialSize, char *input, int inputSize) {
+void newTypes(stateTypes *now, int *nowSize, char *input, int inputSize) {
     char word[WORD_LENGTH] = {0};
     int wordSize = 0;
 

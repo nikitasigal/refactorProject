@@ -9,8 +9,10 @@ void swapTexts(char *sourceText, int *sourceSize, char *outputText, int *outputS
 void readFileNames(char files[][WORD_LENGTH], int *fileCount) {
     // Директория файлов
     DIR *dir = opendir(SOURCE_DIRECTORY);
-    if (dir == NULL)
+    if (dir == NULL) {
+        printf("Incorrect directory name. Please, change directory in 'definitions.h'");
         exit(EXIT_FAILURE);
+    }
 
     // Текущий файл
     struct dirent *ent = NULL;
