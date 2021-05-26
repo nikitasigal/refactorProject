@@ -13,6 +13,7 @@
 #define WORDS_FOR_STATE_NUM 200         // Размер массива состояний
 #define TEXT_SIZE 100000                // Размер текста
 #define CHAIN_LENGTH 100
+#define WHILE_LENGTH 150                //Размер массива для зацикливаний
 
 #define SOURCE_DIRECTORY "Src\\"
 #define OUTPUT_DIRECTORY "Out\\"

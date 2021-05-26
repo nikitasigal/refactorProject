@@ -73,7 +73,7 @@ void checkLooping(char *input, int inputSize, char variables[][NAME_SIZE], const
 
     int lineNumber = 1;
 
-    whileStats search[NAME_SIZE];
+    whileStats search[WHILE_LENGTH];
     int searchSize = 0;
 
     for (int i = 0; i < inputSize; ++i) {
@@ -99,8 +99,9 @@ void checkLooping(char *input, int inputSize, char variables[][NAME_SIZE], const
                     i++;
 
                 search[searchSize].Looped = false;
+                search[searchSize].lineNum = lineNumber;
 
-                while ((input[i - 1] != ')') || (bracketSequence != 0)) {
+                while (((input[i - 1] != ')') || (bracketSequence != 0)) && i < inputSize) {
                     skipComments_2(input, inputSize, &i, &lineNumber);
 
                     if (input[i] == ' ')
@@ -137,8 +138,6 @@ void checkLooping(char *input, int inputSize, char variables[][NAME_SIZE], const
                 }
                 i++;
 
-                search[searchSize].lineNum = lineNumber;
-
                 if (input[i] == '\n')
                     lineNumber++;
 
@@ -172,7 +171,7 @@ void checkLooping(char *input, int inputSize, char variables[][NAME_SIZE], const
                     newBracketSequence++;
                     j++;
 
-                    while ((input[j - 1] != '}') || (newBracketSequence != 0)) {
+                    while (((input[j - 1] != '}') || (newBracketSequence != 0)) && j < inputSize) {
                         skipComments_2(input, inputSize, &i, &lineNumber);
 
                         if (input[j] == '{')
@@ -201,7 +200,7 @@ void checkLooping(char *input, int inputSize, char variables[][NAME_SIZE], const
                         j++;
                     }
                 } else {
-                    while (((input[j - 1] != ';') && (input[j - 1] != '}')) || (newBracketSequence != 0)) {
+                    while ((((input[j - 1] != ';') && (input[j - 1] != '}')) || (newBracketSequence != 0)) && j < inputSize) {
                         if (input[j] == '{')
                             newBracketSequence++;
                         else if (input[j] == '}')
@@ -230,11 +229,161 @@ void checkLooping(char *input, int inputSize, char variables[][NAME_SIZE], const
                     }
                 }
 
+            } else if (!strcmp(word, "for")) {
+                char condition[WORD_LENGTH] = {0};
+                int conditionSize = 0;
+                int bracketSequence = 0;
+                int progressState = 0;
+
+                if (input[i] == ' ')
+                    i++;
+
+                search[searchSize].Looped = false;
+                search[searchSize].lineNum = lineNumber;
+
+                while (((input[i - 1] != ')') || (bracketSequence != 0)) && i < inputSize) {
+
+                    skipComments_2(input, inputSize, &i, &lineNumber);
+
+                    if (input[i] == ';')
+                        progressState++;
+
+                    if (input[i] == '(')
+                        bracketSequence++;
+                    else if (input[i] == ')')
+                        bracketSequence--;
+
+                    if (isalnum(input[i]) || input[i] == '_') {
+                        condition[conditionSize++] = input[i];
+                    } else {
+
+                        if (input[i] == '\n')
+                            lineNumber++;
+
+                        if (progressState == 2 && strlen(condition)) {
+                            for (int j = 0; j < search[searchSize].variableNamesSize; j++) {
+                                if (!strcmp(condition,
+                                            search[searchSize].variableNames[j])) {
+                                    search[searchSize].Looped = false;
+                                }
+                            }
+                        } else {
+
+                            for (int j = 0; j < *variablesSize; j++) {
+                                if (!strcmp(condition, variables[j])) {
+                                    strcpy(search[searchSize].variableNames[search[searchSize].variableNamesSize++],
+                                           variables[j]);
+                                    search[searchSize].Looped = true;
+                                }
+                            }
+
+                        }
+
+                        if (input[i] != ')')
+                            clearWord(condition, &conditionSize);
+
+                    }
+                    i++;
+                }
+                i++;
+
+                progressState = 0;
+
+                /*if (input[i] == '\n')
+                    lineNumber++;*/
+
+                if (search[searchSize].variableNamesSize == 0){
+                    search[searchSize].Looped = true;
+                }
+
+                searchSize++;
+
+                if (search[searchSize - 1].Looped == false) {
+                    i--;
+                    clearWord(word, &wordSize);
+                    continue;
+                }
+                else {
+                    if (input[i] == ' ')
+                        i++;
+
+                    skipComments_2(input, inputSize, &i, &lineNumber);
+
+                    int j = i;
+                    int newBracketSequence = 0;
+
+                    if (input[j] == ' ')
+                        j++;
+
+                    skipComments_2(input, inputSize, &j, &lineNumber);
+
+                    if (input[j] == '{') {
+                        newBracketSequence++;
+                        j++;
+
+                        while (((input[j - 1] != '}') || (newBracketSequence != 0)) && j < inputSize) {
+                            skipComments_2(input, inputSize, &i, &lineNumber);
+
+                            if (input[j] == '{')
+                                newBracketSequence++;
+                            else if (input[j] == '}')
+                                newBracketSequence--;
+
+                            if (isalnum(input[j]) || input[j] == '_') {
+                                condition[conditionSize++] = input[j];
+                            } else {
+
+                                for (int k = 0; k < searchSize; k++)
+                                    for (int l = 0; l < search[searchSize - 1].variableNamesSize; l++)
+                                        if (!strcmp(condition, search[searchSize - 1].variableNames[l])) {
+                                            search[searchSize - 1].Looped = false;
+                                            break;
+                                        }
+
+                                if ((!(strcmp(condition, "break")))) {
+                                    search[searchSize - 1].Looped = false;
+                                    break;
+                                }
+
+                                clearWord(condition, &conditionSize);
+                            }
+                            j++;
+                        }
+
+                    } else {
+                        while ((((input[j - 1] != ';') && (input[j - 1] != '}')) || (newBracketSequence != 0)) && j < inputSize) {
+                            if (input[j] == '{')
+                                newBracketSequence++;
+                            else if (input[j] == '}')
+                                newBracketSequence--;
+
+                            if (isalnum(input[j]) || input[j] == '_') {
+                                condition[conditionSize++] = input[j];
+                            } else {
+                                for (int k = 0; k < searchSize; k++) {
+                                    for (int l = 0; l < search[searchSize - 1].variableNamesSize; l++) {
+                                        if (!strcmp(condition, search[searchSize - 1].variableNames[l])) {
+                                            search[searchSize - 1].Looped = false;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if ((!(strcmp(condition, "break")))) {
+                                    search[searchSize - 1].Looped = false;
+                                    break;
+                                }
+
+                                clearWord(condition, &conditionSize);
+                            }
+                            j++;
+                        }
+                    }
+                }
             }
-            clearWord(word, &wordSize);
+        clearWord(word, &wordSize);
         }
     }
-
     printf("\nPossible looping:\n");
 
     for (int i = 0; i < searchSize; i++)

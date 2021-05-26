@@ -37,7 +37,7 @@ typedef enum {                           //Наши состояния
 // WHILE_STATS
 typedef struct {
     int lineNum;
-    char variableNames[WORD_COUNT][NAME_SIZE];
+    char variableNames[WORD_LENGTH][NAME_SIZE];
     int variableNamesSize;
     bool Looped;
 } whileStats;
