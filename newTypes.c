@@ -4,12 +4,32 @@
 void skip2(const char *input, int *i, int inputSize, int *lineNumber) {
     while (*i < inputSize) {
         // Пропускаем пробелы, \n, \t
-        if (input[*i] == ' ' || input[*i] == '\n' || input[*i] == '\t') {
+        if (input[*i] == ' ' || input[*i] == '\n' || input[*i] == '\t' || input[*i] == '*') {
             if (input[*i] == '\n'){
                 (*lineNumber)++;
             }
             (*i)++;
             continue;
+        }
+
+        if (input[*i] == '"'){
+            (*i)++;
+            while (input[*i - 1] == '\\' || input[*i] != '"'){
+                if (input[*i] == '\n'){
+                    (*lineNumber)++;
+                }
+                (*i)++;
+            }
+        }
+
+        if (input[*i] == '\''){
+            (*i)++;
+            while ((input[*i - 1] == '\\' && input[*i - 2] != '\\') || input[*i] != '\''){
+                if (input[*i] == '\n'){
+                    (*lineNumber)++;
+                }
+                (*i)++;
+            }
         }
 
         // Пропускаем комментарии

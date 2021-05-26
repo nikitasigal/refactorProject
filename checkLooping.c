@@ -44,7 +44,6 @@ void skip3_2(const char *input, int *i, int inputSize, int *lineNumber) {
             if (input[*i + 1] == '/') {
                 while (input[*i] != '\n')
                     (*i)++;
-                (*lineNumber)++;
                 continue;
             } else if (input[*i + 1] == '*') {
                 while (input[*i] != '*' || input[*i + 1] != '/')
@@ -58,8 +57,11 @@ void skip3_2(const char *input, int *i, int inputSize, int *lineNumber) {
 }
 
 void skipComments_2(const char *input, int inputSize, int *i, int *lineNumber) {
-    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*' || input[*i] == '"' || input[*i] == '\'') {
+    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*' || input[*i] == '"' || input[*i] == '\'' || input[*i] == '*') {
         skip3_2(input, i, inputSize, lineNumber);
+        if (isalnum(input[*i]) || input[*i] == '_'){
+            (*i)--;
+        }
     }
 }
 
@@ -90,10 +92,10 @@ void checkLooping (char *input, int inputSize, char variables[][NAME_SIZE], int 
             word[wordSize++] = input[i];
         } else {
 
-            skipComments_2(input, inputSize, &i, &lineNumber);
-
             if (input[i] == '\n')
                 lineNumber++;
+
+            skipComments_2(input, inputSize, &i, &lineNumber);
 
             if (strlen(word) == 0)
                 continue;

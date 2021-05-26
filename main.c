@@ -113,16 +113,15 @@ int main() {
 
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
-        // Step 6 - checking for endless loops TODO почини
-        checkLooping(sourceText, sourceSize, variables, &variablesSize,
-                     functions, &functionsSize);
-
-        // nesting
         printf("\nMaximum nesting of loops: %d\n", nestingArray[i]);
 
-        // Step 7 TODO почини
-        //incorrectWriting(now, &nowSize, initialSize, sourceText, sourceSize, variables, &variablesSize,
-        //                 functions, &functionsSize);
+        //Step 6 - checking variables/functions/data types if their names are wrong
+        incorrectWriting(now, &nowSize, initialSize, sourceText, sourceSize, variables, &variablesSize,
+                        functions, &functionsSize);
+
+        // Step 7 - checking for endless loops
+        checkLooping(sourceText, sourceSize, variables, &variablesSize,
+                     functions, &functionsSize);
 
         // Выведем не инициализированные переменные и неиспользованные переменные и функции
         printVarInitMap(variablesInitMap, files[i]);

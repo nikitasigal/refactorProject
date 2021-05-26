@@ -56,6 +56,7 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
                     int j;                  //Переменная, помогающая бегать
                     int newLineNumber = 1;
                     bool multi = false;     //Для объявления переменных через запятую
+                    bool inFunc = false;
 
                     //В случае struct и enum делаем то же, что и в прошлом коммите
                     if (!strcmp(word, "struct") || !strcmp(word, "enum")) {
@@ -113,6 +114,16 @@ void incorrectWriting(stateTypes *now, int *nowSize, int initialSize, char *inpu
 
                         //Формирование слова
                         readWord(input, word, &wordSize, &j);
+
+                        for (int k = 0; k < *nowSize; k++){
+                            if (!strcmp(word, now[k].stateName)) {
+                                inFunc = true;
+                                break;
+                            }
+                        }
+
+                        if (inFunc)
+                            break;
 
                         //Пропускаем ненужное до следующего символа
                         skip2(input, &j, inputSize, &newLineNumber);
