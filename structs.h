@@ -57,6 +57,8 @@ void insertElement(Map *m, char *key, int lineNumber, bool isFoo, char *file);
 
 void checkElement(Map *m, char *key);
 
+unsigned int hash(char key[KEY_SIZE]);
+
 void printVarInitMap(Map *m, char *fileName);
 
 void printFooMap(Map *m, char *fileName);

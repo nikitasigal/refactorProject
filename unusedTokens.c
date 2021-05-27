@@ -1,40 +1,10 @@
 #include "unusedTokens.h"
 
 /*
- * Аргументы функций до сего момента игнорировались. Пора это исправить и взять их под опеку
- */
-void getArguments(char *input, int *i, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, int *lineNumber,
-                  char *file) {
-    // Сюда собираем текущее слово
-    char word[WORD_LENGTH] = {0};
-    int wordSize = 0;
-
-    // Сейчас мы на (, пропустим её
-    (*i)++;
-
-    while (input[*i] != ')') {
-        universalSkip(input, i, inputSize, lineNumber);
-
-        // Скипаем типы данных
-        skipTypes(input, i, inputSize, now, nowSize, lineNumber);
-
-        // Собираем слово, имя переменной
-        while (isalnum(input[*i]) || input[*i] == '_') {
-            word[wordSize++] = input[(*i)++];
-        }
-
-        // Добавляем её в мап
-        insertElement(variablesMap, word, *lineNumber, false, file);
-
-        clearWord(word, &wordSize);
-    }
-}
-
-/*
  * Проверка на неиспользованные переменные и функции
  */
 void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap,
-                 int *lineNumber, char *file) {
+                 int *lineNumber) {
     // Сюда собираем текущее слово
     char word[WORD_LENGTH] = {0};
     int wordSize = 0;
@@ -62,7 +32,6 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
             bool wasInitialization = false;
             for (int j = 0; j < nowSize && strlen(word) != 0; ++j) {
                 if (!strcmp(now[j].stateName, word) && now[j].value == INIT) {
-                    // Перед началом, скипнем всё ненужное и почислим слово
                     universalSkip(input, &i, inputSize, lineNumber);
                     clearWord(word, &wordSize);
 
@@ -73,13 +42,26 @@ void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *
                     readWord(input, word, &wordSize, &i);
 
                     universalSkip(input, &i, inputSize, lineNumber);
+
+                    if (strlen(word) != 0 && input[i] == '(') {
+                        while(input[i] != '{' && input[i] != ';')
+                            i++;
+                        wasInitialization = true;
+                        break;
+                    }
+
+                    if (input[i] == ';') {
+                        wasInitialization = true;
+                        clearWord(word, &wordSize);
+                        break;
+                    }
+
+                    do {
+                        i++;
+                        wasInitialization = true;
+                    } while(input[i] != ';');
+
                     clearWord(word, &wordSize);
-
-                    // Если мы встретили (, то это функция. Возьмём её аргументы (так как у нас нет их в мапах)
-                    if (strlen(word) != 0 && input[i] == '(')
-                        getArguments(input, &i, inputSize, now, nowSize, variablesMap, lineNumber, file);
-
-                    wasInitialization = true;
                 }
             }
 

@@ -63,8 +63,9 @@ bool checkVariables(VARIABLE *variables, int variableCount) {
 /*
  * Проверяет одну строчку на наличие объявления переменных. Так же по пути определяет, инициализированы ли переменные
  */
-void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *variables, int *wordSize, int *i,
-                    int *variableCount, Map *functionsMap, Map *variablesMap, int *lineNumber, char *file) {
+void checkFirstLine(char *input, int inputSize, char *word, VARIABLE *variables, int *wordSize, int *i,
+                    int *variableCount, Map *functionsMap, Map *variablesMap, int *lineNumber, char *file,
+                    stateTypes *now, int nowSize) {
     while (input[*i] != ';') {
         universalSkip(input, i, inputSize, lineNumber);
 
@@ -87,10 +88,34 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
             if (strcmp(word, "main") != 0)
                 insertElement(functionsMap, word, *lineNumber, true, file);
 
+            // Проверим, объявление или инициализация это. Если объявление, то не надо брать переменные в мап
+            int j = *i;
+            int tempBracketSequence = 0;
+            do {
+                universalSkip(input, i, inputSize, lineNumber);
+                if (input[j] == '(') {
+                    tempBracketSequence++;
+                    j++;
+                    continue;
+                }
+                if (input[j] == ')') {
+                    tempBracketSequence--;
+                    j++;
+                    continue;
+                }
+                j++;
+            } while (tempBracketSequence != 0);
+
+            // Если дальше идёт ';', то это объявление
+            if (input[j] == ';') {
+                *i = j;
+                clearWord(word, wordSize);
+                break;
+            }
+
             // Пропустим () функции
             int bracketSequence = 0;
             do {
-                universalSkip(input, i, inputSize, lineNumber);
                 if (input[*i] == '(') {
                     bracketSequence++;
                     (*i)++;
@@ -101,7 +126,26 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
                     (*i)++;
                     continue;
                 }
-                (*i)++;
+                if (input[*i] == '[') {
+                    while (input[*i] != ']')
+                        (*i)++;
+                    (*i)++;
+                }
+                clearWord(word, wordSize);
+
+                // Пропустим лишнее
+                skipTypes(input, i, inputSize, now, nowSize, lineNumber);
+                universalSkip(input, i, inputSize, lineNumber);
+                skipTypes(input, i, inputSize, now, nowSize, lineNumber);
+                universalSkip(input, i, inputSize, lineNumber);
+
+                // Возьмём имя переменной
+                readWord(input, word, wordSize, i);
+
+                // Пушаем переменную в мап
+                if (strlen(word) != 0)
+                    insertElement(variablesMap, word, *lineNumber, false, file);
+                variablesMap[hash(word)].isInit = true;
             } while (bracketSequence != 0);
             clearWord(word, wordSize);
             break;
@@ -111,9 +155,31 @@ void checkFirstLine(const char *input, int inputSize, char *word, VARIABLE *vari
         if (input[*i] != '=') {
             variables[*variableCount].line = *lineNumber;
             strcpy(variables[(*variableCount)++].value, word);
-        } else
+        } else {
+            (*i)++;
+            universalSkip(input, i, inputSize, lineNumber);
+
+            // Пропустим { }
+            if (input[*i] == '{') {
+                int bracesSequence = 0;
+                do {
+                    if (input[*i] == '{') {
+                        bracesSequence++;
+                        (*i)++;
+                        continue;
+                    }
+                    if (input[*i] == '}') {
+                        bracesSequence--;
+                        (*i)++;
+                        continue;
+                    }
+                    (*i)++;
+                } while (bracesSequence != 0);
+                universalSkip(input, i, inputSize, lineNumber);
+            }
             while (input[*i] != ',' && input[*i] != ';')
                 (*i)++;
+        }
 
         // Пушаем переменную в мап
         insertElement(variablesMap, word, *lineNumber, false, file);
@@ -191,7 +257,7 @@ void checkSecondLine(const char *input, int inputSize, char *word, int *wordSize
  */
 void skipTypes(char *input, int *i, int inputSize, stateTypes *now, int nowSize, int *lineNumber) {
     for (int j = 0; j < nowSize; ++j) {
-        if (now[j].value == INIT && !strncmp(&input[(*i)], now[j].stateName, strlen(now[j].stateName))) {
+        if ((now[j].value == INIT || now[j].value == STRUCT) && !strncmp(&input[(*i)], now[j].stateName, strlen(now[j].stateName)) && !isalnum(input[(*i) + strlen(now[j].stateName)])) {
             *i += (int) strlen(now[j].stateName);
             j = -1;
             universalSkip(input, i, inputSize, lineNumber);
@@ -253,7 +319,7 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
 
                     // Пока не ';', будем пытаться взять переменные
                     checkFirstLine(input, inputSize, word, variables, &wordSize, &i, &variableCount, functionsMap,
-                                   variablesMap, lineNumber, file);
+                                   variablesMap, lineNumber, file, now, nowSize);
 
                     // Возможно, у нас остались неинициализированные переменные (в массиве variables), проверим их
                     // Если все переменные инициализированы, то выходим
@@ -270,7 +336,8 @@ void checkInit(char *input, int inputSize, stateTypes *now, int nowSize, Map *va
 
                     // Закончили проверять. Выводим переменные, которые не инициализировались
                     for (int k = 0; k < variableCount; ++k)
-                        insertElement(variablesInitMap, variables[k].value, variables[k].line, false, file);
+                        if (!variables[k].isInitialized)
+                            insertElement(variablesInitMap, variables[k].value, variables[k].line, false, file);
 
                     // Очищаем структуру VARIABLE. Из-за того что я не очищал, были баги
                     clearVariables(variables, variableCount);

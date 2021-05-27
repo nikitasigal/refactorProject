@@ -321,16 +321,23 @@ wordHandler(char *input, int inputSize, char *output, int *outputSize, stateType
                             tabsCount--;
 
                         if (peek(&stateStack) == STRUCT && input[i] == '}') {                    //Случай со STRUCT. В нём запрещены пустые {};
-                            (*outputSize)--;
-                            sprintf(output + (*outputSize)++, "}");                //А правила действуют лишь на "конце", причём правила те же, что и у инициализации
+                            // Это enum?
+                            if (output[*outputSize - 2] != '\n') {
+                                sprintf(output + *outputSize, "\n}");
+                                (*outputSize) += 2;
+                            } else {
+                                (*outputSize)--;
+                                sprintf(output + (*outputSize)++, "}");            //А правила действуют лишь на "конце", причём правила те же, что и у инициализации
+                            }
+                            // Идёт ли после } пробел?
+                            if (input[i + 1] != ' ')
+                                sprintf(output + (*outputSize)++, " ");
                             lastState = pop(&stateStack);                                        //Поэтому выносим это состояние и заносим INIT
                             push(&stateStack, INIT);                                       //При встрече с }
                             break;                                                               //Чтобы использовать правила на конце.
                         }                                                                        //Ex.: struct {                      typedef struct{
                                                                                                  //int a;                or          int biba;
                                                                                                  //} value = { 2 };                   } value;
-                      /*if (lastState == EMPTY && input[i] == '{' && stateExisted)
-                         push(&stateStack, NOTHING);*/
 
                         if (peek(&stateStack) == ELSE_SINGLE && input[i] == ';') {
                             pop(&stateStack);

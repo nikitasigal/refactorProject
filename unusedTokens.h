@@ -7,6 +7,6 @@
 #include "generalFunctions.h"
 
 void checkUnused(char *input, int inputSize, stateTypes *now, int nowSize, Map *variablesMap, Map *functionsMap,
-                 int *lineNumber, char *file);
+                 int *lineNumber);
 
 #endif //REFACTORPROJECT_UNUSEDTOKENS_H

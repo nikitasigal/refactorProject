@@ -71,8 +71,9 @@ void insertElement(Map *m, char *key, int lineNumber, bool isFoo, char *file) {
     while (id != start)
         if (m[id].empty) {
             m[id].empty = 0;
-            strcpy(m[id].key, key);
             m[id].line = lineNumber;
+            strcpy(m[id].key, key);
+            strcpy(m[id].fileName, file);
             return;
         } else
             id = (id + 1) % MAP_SIZE;

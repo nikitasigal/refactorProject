@@ -84,6 +84,8 @@ incorrectWriting(stateTypes *now, const int *nowSize, char *input, int inputSize
                     if (input[j] == '{' && now[l].value == STRUCT) {
                         while (input[j] != '}') {
                             skip2(input, &j, inputSize, &newLineNumber);
+                            if (input[j] == '}')
+                                break;
                             j++;
                             if (input[j] == '\n') {
                                 newLineNumber++;

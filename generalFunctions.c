@@ -60,17 +60,33 @@ void universalSkip(const char *input, int *i, int inputSize, int *lineNumber) {
                 continue;
             }
         }
+
+        // Пропускаем директивы препроцессора
+        if (input[*i] == '#') {
+            while (input[*i] != '\n')
+                (*i)++;
+            (*lineNumber)++;
+            continue;
+        }
+
         break;
     }
 }
 
 /*
  * Скипает ТОЛЬКО комментарии. У меня были какие-то проблемы с функцией universalSkip
+ * upd. теперь скипает и директивы препроцессора. Они обрабатывались...
  */
 void skipComments(const char *input, int inputSize, int *i, int *lineNumber) {
-    if (input[(*i)] == '/' && input[(*i) + 1] == '/' || input[(*i)] == '/' && input[(*i)] == '*' || input[*i] == '"' ||
+    if (input[*i] == '/' && input[(*i) + 1] == '/' || input[*i] == '/' && input[*i] == '*' || input[*i] == '"' ||
         input[*i] == '\'') {
         universalSkip(input, i, inputSize, lineNumber);
         --(*i);
+    }
+    if (input[*i] == '#') {
+        while (input[*i] != '\n')
+            (*i)++;
+        if (lineNumber != NULL)
+            (*lineNumber)++;
     }
 }

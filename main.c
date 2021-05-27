@@ -19,7 +19,7 @@ int main() {
     int outputSize = 0;
 
     //now - Массив состояний + их отдельного слова. nowSize - изначальный размер массива (он увеличится, если будут новые типы данных)
-    int nowSize = 19;
+    int nowSize = 20;
     stateTypes now[WORDS_FOR_STATE_NUM] = {{"while",   FOR},
                                            {"for",     FOR},
                                            {"switch",  IF},
@@ -37,7 +37,8 @@ int main() {
                                            {"enum",    STRUCT},
                                            {"case",    CASE},
                                            {"default", CASE},
-                                           {"else",    ELSE}};
+                                           {"else",    ELSE},
+                                           {"const", INIT}};
 
     //Все переменные
     char variables[WORD_LENGTH][NAME_SIZE] = {0};
@@ -101,17 +102,17 @@ int main() {
                   files[i]);
     }
 
-    // Finish collecting the remaining variables for map of unused variables and check for use of variables and functions
+    // Check for use of variables and functions
     for (int i = 0; i < fileCount; ++i) {
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
         // Step 5 - searching for unused variables and functions
-        checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber, files[i]);
+        checkUnused(sourceText, sourceSize, now, nowSize, variablesMap, functionsMap, &lineNumber);
     }
 
     // Analyse every file
     for (int i = 0; i < fileCount; ++i) {
-        printf("----------------------------\nFile '%s':\n----------------------------\n", files[i]);
+        printf("\n----------------------------\nFile '%s':\n----------------------------\n", files[i]);
 
         readFile(sourceText, &sourceSize, OUTPUT_DIRECTORY, files[i]);
 
